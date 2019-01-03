@@ -243,7 +243,7 @@ void Lfo::Tick() {
   if (tick_ >= midi_clock_prescaler_) {
     tick_ = 0;
     for (uint8_t i = 0; i < kNumLfos; ++i) {
-      uint8_t value;
+      uint8_t value = 0;
       uint8_t skip = 0;
       if (lfo_data_[i].waveform == 17) {
         if (phase_[i] < phase_increment_[i]) {

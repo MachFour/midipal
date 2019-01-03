@@ -90,7 +90,7 @@ struct AppInfo {
   // stored in program memory
   const uint8_t* factory_data;
   uint8_t app_name;
-  
+
   // Whether the app can respond to a clock message within 50µs. Set this to
   // false if your app can generate a big bunch of MIDI messages upon the
   // reception of a single clock tick (eg: anything that may generate
@@ -102,9 +102,9 @@ struct AppInfo {
 class App {
  public:
   App() { }
-  
+
   static void Init();
-  
+
   // Can be used to save/load settings in EEPROM.
   static void SaveSetting(uint16_t index);
   static void SaveSettingWord(uint16_t setting_id, uint16_t value);
@@ -112,7 +112,7 @@ class App {
   static void LoadSettings();
   static void ResetToFactorySettings();
   static void Launch(uint8_t app_index);
-  
+
   static void OnInit() {
     if (app_info_.OnInit) {
       (*app_info_.OnInit)();
@@ -187,14 +187,14 @@ class App {
     }
   }
 
-  static uint8_t CheckChannel(uint8_t channel) { 
+  static uint8_t CheckChannel(uint8_t channel) {
     if (app_info_.CheckChannel) {
       return (*app_info_.CheckChannel)(channel);
     } else {
       return 1;
     }
   }
-  
+
   static void OnRawByte(uint8_t byte) {
    if (app_info_.OnRawByte) {
       (*app_info_.OnRawByte)(byte);
@@ -209,9 +209,9 @@ class App {
       (*app_info_.OnRawMidiData)(status, data, data_size, accepted_channel);
     }
   }
-  
+
   // Event handlers for UI.
-  static uint8_t OnIncrement(int8_t increment) { 
+  static uint8_t OnIncrement(int8_t increment) {
     return app_info_.OnIncrement ? (*app_info_.OnIncrement)(increment) : 0;
   }
   static uint8_t OnClick() {
@@ -223,7 +223,7 @@ class App {
   static uint8_t OnRedraw() {
     return app_info_.OnRedraw ? (*app_info_.OnRedraw)() : 0;
   }
-  
+
   // Parameter and page checking.
   static void SetParameter(uint8_t key, uint8_t value) {
     if (app_info_.SetParameter) {
@@ -239,10 +239,10 @@ class App {
       return settings_data()[key];
     }
   }
-  static uint8_t CheckPageStatus(uint8_t index) { 
+  static uint8_t CheckPageStatus(uint8_t index) {
     return app_info_.CheckPageStatus ? (*app_info_.CheckPageStatus)(index) : 1;
   }
-  
+
   // Access to settings data structure
   static uint16_t settings_size() { return app_info_.settings_size; }
   static uint16_t settings_offset() { return app_info_.settings_offset; }
@@ -253,7 +253,7 @@ class App {
   static bool realtime_clock_handling() {
     return app_info_.realtime_clock_handling;
   }
-  
+
   static void FlushOutputBuffer(uint8_t size);
   static void SendNow(uint8_t byte);
   static void Send(uint8_t status, uint8_t* data, uint8_t size);
@@ -264,15 +264,15 @@ class App {
   static void SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag);
   static void SendScheduledNotes(uint8_t channel);
   static void FlushQueue(uint8_t channel);
-  
+
   static uint8_t num_apps();
   static bool NoteClock(bool on, uint8_t channel, uint8_t note);
-  
+
  private:
   static void RemoteControl(uint8_t channel, uint8_t controller, uint8_t value);
-  
+
   static AppInfo app_info_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(App);
 };
 

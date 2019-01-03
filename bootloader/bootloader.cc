@@ -20,7 +20,7 @@
 
 #include <avr/boot.h>
 #include <avr/pgmspace.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 #include "avrlib/devices/shift_register.h"
 #include "avrlib/gpio.h"
@@ -107,11 +107,10 @@ enum SysExReceptionState {
 inline void MidiLoop() {
   uint8_t byte;
   uint16_t bytes_read = 0;
-  uint16_t rx_buffer_index;
+  uint16_t rx_buffer_index = 0;
   uint8_t state = MATCHING_HEADER;
-  uint8_t checksum;
+  uint8_t checksum = 0;
   uint8_t sysex_commands[2];
-  uint8_t status = 0;
 
   midi.Init();
   page = 0;
@@ -146,7 +145,6 @@ inline void MidiLoop() {
           }
         } else {
           state = MATCHING_HEADER;
-          status = 0;
           bytes_read = 0;
         }
         break;

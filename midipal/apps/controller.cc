@@ -89,6 +89,7 @@ void Controller::OnRawMidiData(
 /* static */
 uint8_t Controller::OnPot(uint8_t pot, uint8_t value) {
   app.Send3(0xb0 | channel_, cc_[pot], value);
+  return value;
 }
 
 } }  // namespace midipal::apps

@@ -341,7 +341,7 @@ uint8_t Sequencer::CheckPageStatus(uint8_t index) {
   }
   index -= 13;
   
-  uint8_t step_index;
+  uint8_t step_index = 0;
   while (index >= kNumBytesPerStep) {
     ++step_index;
     index -= kNumBytesPerStep;

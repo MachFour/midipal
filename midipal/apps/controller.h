@@ -36,13 +36,13 @@ class Controller {
      uint8_t accepted_channel);
 
   static uint8_t OnPot(uint8_t pot, uint8_t value);
-  
+
   static const AppInfo app_info_ PROGMEM;
-  
+
  private:
   static uint8_t channel_;
   static uint8_t cc_[8];
-  
+
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
