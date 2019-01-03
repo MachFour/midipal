@@ -133,7 +133,7 @@ void ClockSource::SetParameter(uint8_t key, uint8_t value) {
   if (key == 5) {
     key = 1;
   }
-  static_cast<uint8_t*>(&running_)[key] = value;
+  (&running_)[key] = value;
   clock.Update(bpm_, groove_template_, groove_amount_);
 }
 
@@ -142,7 +142,7 @@ uint8_t ClockSource::GetParameter(uint8_t key) {
   if (key == 5) {
     key = 1;
   }
-  return static_cast<uint8_t*>(&running_)[key];
+  return (&running_)[key];
 }
 
 /* static */
@@ -154,7 +154,7 @@ uint8_t ClockSource::OnClick() {
       elapsed_time_ += t;
       SetParameter(
           1,
-          avrlib::Clip(18750000 * num_taps_ / elapsed_time_, 40, 240));
+          avrlib::Clip(18750000 * num_taps_ / elapsed_time_, 40_u8, 240_u8));
     } else {
       num_taps_ = 0;
       elapsed_time_ = 0;

@@ -158,24 +158,23 @@ void Ui::DoEvents() {
       // Internal handling of the encoder.
       if (!app.OnIncrement(e.value)) {
         if (editing_) {
+          auto increment = static_cast<int8_t>(e.value);
           if (page_def.value_res_id == UNIT_SIGNED_INTEGER) {
-            int16_t v = static_cast<int8_t>(app.GetParameter(page_));
-            v = Clip(
-                v + static_cast<int8_t>(e.value),
-                static_cast<int8_t>(page_def.min),
-                static_cast<int8_t>(page_def.max));
-            app.SetParameter(page_, static_cast<int8_t>(v));
-          } else {
-            int16_t v = app.GetParameter(page_);
-            v = Clip(
-                v + static_cast<int8_t>(e.value),
-                page_def.min,
-                page_def.max);
-            app.SetParameter(page_, v);
+            auto old_val = static_cast<int8_t>(app.GetParameter(page_));
+            auto min = static_cast<int8_t>(page_def.min);
+            auto max = static_cast<int8_t>(page_def.max);
+            auto new_val = static_cast<int8_t>(Clip(old_val + increment, min, max));
+            app.SetParameter(page_, static_cast<uint8_t>(new_val));
+          } else { // UNSIGNED INTEGER
+            auto old_val = app.GetParameter(page_);
+            auto min = page_def.min;
+            auto max = page_def.max;
+            auto new_val = static_cast<uint8_t>(Clip(old_val + increment, min, max));
+            app.SetParameter(page_, static_cast<uint8_t>(new_val));
           }
         } else {
           uint8_t current_page = page_;
-          while (1) {
+          while (true) {
             page_ += e.value;
             if (page_ == 0xff) {
               page_ = 0;

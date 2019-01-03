@@ -181,9 +181,9 @@ void GenericFilter::OnRawMidiData(
           value = 0;
         }
         if (t.wrap()) {
-          new_data[j] = value & 0x7f;
+          new_data[j] = byteAnd(value, 0x7f);
         } else {
-          new_data[j] = Clip(value, 0x00, 0x7f);
+          new_data[j] = Clip(value, 0x00_u8, 0x7f_u8);
         }
       }
       data[0] = new_data[0];

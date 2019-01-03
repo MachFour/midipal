@@ -121,7 +121,7 @@ void ClockSourceLive::OnNoteOn(
     uint8_t ratio = pgm_read_byte(ratios + note - control_note_);
     if (ratio) {
       multiplier_ = avrlib::U8ShiftRight4(ratio);
-      SetParameter(3, ratio & 0x0f);
+      SetParameter(3, byteAnd(ratio, 0x0f_u8));
       if (send_start_) {
         app.SendNow(0xfa);
       }
@@ -142,7 +142,7 @@ void ClockSourceLive::OnRawByte(uint8_t byte) {
   if (byte == 0xf8) {
     ++num_ticks_;
     if (num_ticks_ == 192) {
-      SetParameter(1, avrlib::Clip(18750000 * 8 / clock.value(), 10, 255));
+      SetParameter(1, avrlib::Clip(18750000 * 8 / clock.value(), 10_u8, 255_u8));
       num_ticks_ = 0;
       clock.Reset();
     }
@@ -161,7 +161,7 @@ void ClockSourceLive::SetParameter(uint8_t key, uint8_t value) {
   if (key == 6) {
     key = 1;
   }
-  static_cast<uint8_t*>(&running_)[key] = value;
+  (&running_)[key] = value;
   clock.UpdateFractional(bpm_, multiplier_, divider_, 0, 0);
 }
 
@@ -170,7 +170,7 @@ uint8_t ClockSourceLive::GetParameter(uint8_t key) {
   if (key == 6) {
     key = 1;
   }
-  return static_cast<uint8_t*>(&running_)[key];
+  return (&running_)[key];
 }
 
 /* static */
@@ -191,7 +191,7 @@ void ClockSourceLive::TapTempo() {
     elapsed_time_ += t;
     SetParameter(
         1,
-        avrlib::Clip(18750000 * num_taps_ / elapsed_time_, 40, 240));
+        avrlib::Clip(18750000 * num_taps_ / elapsed_time_, 40_u8, 240_u8));
   } else {
     num_taps_ = 0;
     elapsed_time_ = 0;

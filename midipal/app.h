@@ -272,6 +272,7 @@ class App {
   static void RemoteControl(uint8_t channel, uint8_t controller, uint8_t value);
 
   static AppInfo app_info_;
+  static const AppInfo* registry[];
 
   DISALLOW_COPY_AND_ASSIGN(App);
 };

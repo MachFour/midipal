@@ -103,8 +103,8 @@ void CcKnob::OnRawMidiData(
 
 /* static */
 void CcKnob::SetParameter(uint8_t key, uint8_t value) {
-  uint8_t previous_value = value_;
-  static_cast<uint8_t*>(&value_)[key] = value;
+  uint8_t previous_value = value_; //(&value_)[0]
+  (&value_)[key] = value;
   if (type_ == 0) {
     // Extended range not supported by CC.
     if (min_ > 127) {
@@ -120,7 +120,7 @@ void CcKnob::SetParameter(uint8_t key, uint8_t value) {
   value_ = Clip(value_, min_, max_);
   if (value_ != previous_value) {
     if (type_ == 0) {
-      app.Send3(0xb0 | channel_, number_ & 0x7f, value_ & 0x7f);
+      app.Send3(byteOr(channel_, 0xb0_u8), byteAnd(number_, 0x7f_u8), byteAnd(value_, 0x7f_u8));
     } else {
       app.Send3(0xb0 | channel_, midi::kNrpnMsb, number_ > 127);
       app.Send3(0xb0 | channel_, midi::kNrpnLsb, number_ & 0x7f);
@@ -135,7 +135,7 @@ uint8_t CcKnob::GetParameter(uint8_t key) {
   if (key == 0) {
     return Clip(value_, min_, max_);
   } else {
-    return static_cast<uint8_t*>(&value_)[key];
+    return (&value_)[key];
   }
 }
 
