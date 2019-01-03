@@ -43,7 +43,7 @@ class SyncLatch {
   static uint8_t OnClick();
   static uint8_t OnRedraw();
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static uint8_t num_beats_;

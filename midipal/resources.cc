@@ -25,236 +25,236 @@
 
 namespace midipal {
 
-static const prog_char str_res_syncltch[] PROGMEM = "syncltch";
-static const prog_char str_res_polyseq[] PROGMEM = "polyseq";
-static const prog_char str_res_arpeggio[] PROGMEM = "arpeggio";
-static const prog_char str_res_bpm_cntr[] PROGMEM = "bpm cntr";
-static const prog_char str_res_cc_knob[] PROGMEM = "cc knob";
-static const prog_char str_res_chordmem[] PROGMEM = "chordmem";
-static const prog_char str_res_clock[] PROGMEM = "clock";
-static const prog_char str_res_divider[] PROGMEM = "divider";
-static const prog_char str_res_chnfiltr[] PROGMEM = "chnfiltr";
-static const prog_char str_res_chnmergr[] PROGMEM = "chnmergr";
-static const prog_char str_res_user_prg[] PROGMEM = "user prg";
-static const prog_char str_res_dispatch[] PROGMEM = "dispatch";
-static const prog_char str_res_drums[] PROGMEM = "drums";
-static const prog_char str_res_monitor[] PROGMEM = "monitor";
-static const prog_char str_res_randomiz[] PROGMEM = "randomiz";
-static const prog_char str_res_contrllr[] PROGMEM = "contrllr";
-static const prog_char str_res_splitter[] PROGMEM = "splitter";
-static const prog_char str_res_delay[] PROGMEM = "delay";
-static const prog_char str_res_scale[] PROGMEM = "scale";
-static const prog_char str_res_sequencr[] PROGMEM = "sequencr";
-static const prog_char str_res_cc_lfo[] PROGMEM = "cc lfo";
-static const prog_char str_res_tanpura[] PROGMEM = "tanpura";
-static const prog_char str_res_settings[] PROGMEM = "settings";
-static const prog_char str_res_notenuke[] PROGMEM = "notenuke";
-static const prog_char str_res_sysxdump[] PROGMEM = "sysxdump";
-static const prog_char str_res__reset_[] PROGMEM = "!reset!";
-static const prog_char str_res___v1_4__[] PROGMEM = "¥ v1.4 ¥";
-static const prog_char str_res_sndoff[] PROGMEM = "sndOff";
-static const prog_char str_res_rstctr[] PROGMEM = "rstCtr";
-static const prog_char str_res_lclctr[] PROGMEM = "lclCtr";
-static const prog_char str_res_notoff[] PROGMEM = "notOff";
-static const prog_char str_res_omnoff[] PROGMEM = "omnOff";
-static const prog_char str_res_omnion[] PROGMEM = "omniOn";
-static const prog_char str_res_monoon[] PROGMEM = "monoOn";
-static const prog_char str_res_polyon[] PROGMEM = "polyOn";
-static const prog_char str_res_sysx__[] PROGMEM = "sysx..";
-static const prog_char str_res__sysx_[] PROGMEM = ".sysx.";
-static const prog_char str_res___sysx[] PROGMEM = "..sysx";
-static const prog_char str_res_start[] PROGMEM = "start";
-static const prog_char str_res_stop[] PROGMEM = "stop";
-static const prog_char str_res_cont_[] PROGMEM = "cont.";
-static const prog_char str_res_reset[] PROGMEM = "reset";
-static const prog_char str_res_chn[] PROGMEM = "chn";
-static const prog_char str_res_ccc[] PROGMEM = "ccc";
-static const prog_char str_res_clc[] PROGMEM = "clc";
-static const prog_char str_res_cln[] PROGMEM = "cln";
-static const prog_char str_res_all[] PROGMEM = "all";
-static const prog_char str_res_rest[] PROGMEM = "rest";
-static const prog_char str_res_tie[] PROGMEM = "tie";
-static const prog_char str_res_exit[] PROGMEM = "exit";
-static const prog_char str_res_off[] PROGMEM = "off";
-static const prog_char str_res_on[] PROGMEM = "on";
-static const prog_char str_res_no[] PROGMEM = "no";
-static const prog_char str_res_yes[] PROGMEM = "yes";
-static const prog_char str_res_xfe[] PROGMEM = "xFE";
-static const prog_char str_res_let[] PROGMEM = "let";
-static const prog_char str_res_flt[] PROGMEM = "flt";
-static const prog_char str_res_rec[] PROGMEM = "rec";
-static const prog_char str_res_dub[] PROGMEM = "dub";
-static const prog_char str_res_run[] PROGMEM = "run";
-static const prog_char str_res_bpm[] PROGMEM = "bpm";
-static const prog_char str_res_grv[] PROGMEM = "grv";
-static const prog_char str_res_amt[] PROGMEM = "amt";
-static const prog_char str_res_tap[] PROGMEM = "tap";
-static const prog_char str_res_swg[] PROGMEM = "swg";
-static const prog_char str_res_shf[] PROGMEM = "shf";
-static const prog_char str_res_psh[] PROGMEM = "psh";
-static const prog_char str_res_lag[] PROGMEM = "lag";
-static const prog_char str_res_hum[] PROGMEM = "hum";
-static const prog_char str_res_mnk[] PROGMEM = "mnk";
-static const prog_char str_res_val[] PROGMEM = "val";
-static const prog_char str_res_num[] PROGMEM = "num";
-static const prog_char str_res_typ[] PROGMEM = "typ";
-static const prog_char str_res_cc_[] PROGMEM = "cc#";
-static const prog_char str_res_nrp[] PROGMEM = "nrp";
-static const prog_char str_res_min[] PROGMEM = "min";
-static const prog_char str_res_max[] PROGMEM = "max";
-static const prog_char str_res_mod[] PROGMEM = "mod";
-static const prog_char str_res_ptn[] PROGMEM = "ptn";
-static const prog_char str_res_len[] PROGMEM = "len";
-static const prog_char str_res_euc[] PROGMEM = "euc";
-static const prog_char str_res_int[] PROGMEM = "int";
-static const prog_char str_res_ext[] PROGMEM = "ext";
-static const prog_char str_res_not[] PROGMEM = "not";
-static const prog_char str_res_clk[] PROGMEM = "clk";
-static const prog_char str_res_pt1[] PROGMEM = "pt1";
-static const prog_char str_res_pt2[] PROGMEM = "pt2";
-static const prog_char str_res_pt3[] PROGMEM = "pt3";
-static const prog_char str_res_pt4[] PROGMEM = "pt4";
-static const prog_char str_res_cc1[] PROGMEM = "cc1";
-static const prog_char str_res_cc2[] PROGMEM = "cc2";
-static const prog_char str_res_cc3[] PROGMEM = "cc3";
-static const prog_char str_res_cc4[] PROGMEM = "cc4";
-static const prog_char str_res_cc5[] PROGMEM = "cc5";
-static const prog_char str_res_cc6[] PROGMEM = "cc6";
-static const prog_char str_res_cc7[] PROGMEM = "cc7";
-static const prog_char str_res_cc8[] PROGMEM = "cc8";
-static const prog_char str_res_inp[] PROGMEM = "inp";
-static const prog_char str_res_out[] PROGMEM = "out";
-static const prog_char str_res_spl[] PROGMEM = "spl";
-static const prog_char str_res_low[] PROGMEM = "low";
-static const prog_char str_res_upp[] PROGMEM = "upp";
-static const prog_char str_res_vel[] PROGMEM = "vel";
-static const prog_char str_res__c1[] PROGMEM = "#c1";
-static const prog_char str_res__c2[] PROGMEM = "#c2";
-static const prog_char str_res_cyc[] PROGMEM = "cyc";
-static const prog_char str_res_pol[] PROGMEM = "pol";
-static const prog_char str_res_rnd[] PROGMEM = "rnd";
-static const prog_char str_res_stk[] PROGMEM = "stk";
-static const prog_char str_res_dir[] PROGMEM = "dir";
-static const prog_char str_res_up[] PROGMEM = "up";
-static const prog_char str_res_dwn[] PROGMEM = "dwn";
-static const prog_char str_res_u_d[] PROGMEM = "u&d";
-static const prog_char str_res_pla[] PROGMEM = "pla";
-static const prog_char str_res_chd[] PROGMEM = "chd";
-static const prog_char str_res_oct[] PROGMEM = "oct";
-static const prog_char str_res_dur[] PROGMEM = "dur";
-static const prog_char str_res_lat[] PROGMEM = "lat";
-static const prog_char str_res_div[] PROGMEM = "div";
-static const prog_char str_res_den[] PROGMEM = "den";
-static const prog_char str_res_4_1[] PROGMEM = "4/1";
-static const prog_char str_res_3_1[] PROGMEM = "3/1";
-static const prog_char str_res_2_1[] PROGMEM = "2/1";
-static const prog_char str_res_3_2[] PROGMEM = "3/2";
-static const prog_char str_res_1_1[] PROGMEM = "1/1";
-static const prog_char str_res_3_4[] PROGMEM = "3/4";
-static const prog_char str_res_2_3[] PROGMEM = "2/3";
-static const prog_char str_res_1_2[] PROGMEM = "1/2";
-static const prog_char str_res_3_8[] PROGMEM = "3/8";
-static const prog_char str_res_1_3[] PROGMEM = "1/3";
-static const prog_char str_res_1_4[] PROGMEM = "1/4";
-static const prog_char str_res_1_6[] PROGMEM = "1/6";
-static const prog_char str_res_1_8[] PROGMEM = "1/8";
-static const prog_char str_res__12[] PROGMEM = "/12";
-static const prog_char str_res__16[] PROGMEM = "/16";
-static const prog_char str_res__24[] PROGMEM = "/24";
-static const prog_char str_res__32[] PROGMEM = "/32";
-static const prog_char str_res__48[] PROGMEM = "/48";
-static const prog_char str_res__96[] PROGMEM = "/96";
-static const prog_char str_res_rep[] PROGMEM = "rep";
-static const prog_char str_res_trs[] PROGMEM = "trs";
-static const prog_char str_res_dpl[] PROGMEM = "dpl";
-static const prog_char str_res_off_[] PROGMEM = "off_";
-static const prog_char str_res_mir[] PROGMEM = "mir";
-static const prog_char str_res_alt[] PROGMEM = "alt";
-static const prog_char str_res_trk[] PROGMEM = "trk";
-static const prog_char str_res_roo[] PROGMEM = "roo";
-static const prog_char str_res_scl[] PROGMEM = "scl";
-static const prog_char str_res_voi[] PROGMEM = "voi";
-static const prog_char str_res_hrm[] PROGMEM = "hrm";
-static const prog_char str_res_chr[] PROGMEM = "chr";
-static const prog_char str_res_ion[] PROGMEM = "ion";
-static const prog_char str_res_dor[] PROGMEM = "dor";
-static const prog_char str_res_phr[] PROGMEM = "phr";
-static const prog_char str_res_lyd[] PROGMEM = "lyd";
-static const prog_char str_res_mix[] PROGMEM = "mix";
-static const prog_char str_res_aeo[] PROGMEM = "aeo";
-static const prog_char str_res_loc[] PROGMEM = "loc";
-static const prog_char str_res_bmj[] PROGMEM = "bmj";
-static const prog_char str_res_bmn[] PROGMEM = "bmn";
-static const prog_char str_res_pmj[] PROGMEM = "pmj";
-static const prog_char str_res_pmn[] PROGMEM = "pmn";
-static const prog_char str_res_bhr[] PROGMEM = "bhr";
-static const prog_char str_res_shr[] PROGMEM = "shr";
-static const prog_char str_res_rup[] PROGMEM = "rup";
-static const prog_char str_res_tod[] PROGMEM = "tod";
-static const prog_char str_res_rag[] PROGMEM = "rag";
-static const prog_char str_res_kaa[] PROGMEM = "kaa";
-static const prog_char str_res_meg[] PROGMEM = "meg";
-static const prog_char str_res_mlk[] PROGMEM = "mlk";
-static const prog_char str_res_dpk[] PROGMEM = "dpk";
-static const prog_char str_res_flk[] PROGMEM = "flk";
-static const prog_char str_res_jap[] PROGMEM = "jap";
-static const prog_char str_res_gam[] PROGMEM = "gam";
-static const prog_char str_res_whl[] PROGMEM = "whl";
-static const prog_char str_res_key[] PROGMEM = "key";
-static const prog_char str_res__[] PROGMEM = "";
-static const prog_char str_res_stp[] PROGMEM = "stp";
-static const prog_char str_res_1[] PROGMEM = "";
-static const prog_char str_res_2[] PROGMEM = "";
-static const prog_char str_res_3[] PROGMEM = "";
-static const prog_char str_res_4[] PROGMEM = "";
-static const prog_char str_res_am1[] PROGMEM = "am1";
-static const prog_char str_res_am2[] PROGMEM = "am2";
-static const prog_char str_res_am3[] PROGMEM = "am3";
-static const prog_char str_res_am4[] PROGMEM = "am4";
-static const prog_char str_res_ce1[] PROGMEM = "ce1";
-static const prog_char str_res_ce2[] PROGMEM = "ce2";
-static const prog_char str_res_ce3[] PROGMEM = "ce3";
-static const prog_char str_res_ce4[] PROGMEM = "ce4";
-static const prog_char str_res_wf1[] PROGMEM = "wf1";
-static const prog_char str_res_wf2[] PROGMEM = "wf2";
-static const prog_char str_res_wf3[] PROGMEM = "wf3";
-static const prog_char str_res_wf4[] PROGMEM = "wf4";
-static const prog_char str_res_rt1[] PROGMEM = "rt1";
-static const prog_char str_res_rt2[] PROGMEM = "rt2";
-static const prog_char str_res_rt3[] PROGMEM = "rt3";
-static const prog_char str_res_rt4[] PROGMEM = "rt4";
-static const prog_char str_res_sy1[] PROGMEM = "sy1";
-static const prog_char str_res_sy2[] PROGMEM = "sy2";
-static const prog_char str_res_sy3[] PROGMEM = "sy3";
-static const prog_char str_res_sy4[] PROGMEM = "sy4";
-static const prog_char str_res_tri[] PROGMEM = "tri";
-static const prog_char str_res_sqr[] PROGMEM = "sqr";
-static const prog_char str_res_rmp[] PROGMEM = "rmp";
-static const prog_char str_res_sin[] PROGMEM = "sin";
-static const prog_char str_res_si2[] PROGMEM = "si2";
-static const prog_char str_res_si3[] PROGMEM = "si3";
-static const prog_char str_res_si5[] PROGMEM = "si5";
-static const prog_char str_res_gg1[] PROGMEM = "gg1";
-static const prog_char str_res_gg2[] PROGMEM = "gg2";
-static const prog_char str_res_bt1[] PROGMEM = "bt1";
-static const prog_char str_res_bt2[] PROGMEM = "bt2";
-static const prog_char str_res_sp1[] PROGMEM = "sp1";
-static const prog_char str_res_sp2[] PROGMEM = "sp2";
-static const prog_char str_res_lp1[] PROGMEM = "lp1";
-static const prog_char str_res_lp2[] PROGMEM = "lp2";
-static const prog_char str_res_rs1[] PROGMEM = "rs1";
-static const prog_char str_res_rs2[] PROGMEM = "rs2";
-static const prog_char str_res_s_h[] PROGMEM = "s&h";
-static const prog_char str_res_pa[] PROGMEM = "pa";
-static const prog_char str_res_ma[] PROGMEM = "ma";
-static const prog_char str_res_ni[] PROGMEM = "ni";
-static const prog_char str_res_sa[] PROGMEM = "sa";
-static const prog_char str_res_res[] PROGMEM = "res";
-static const prog_char str_res_fre[] PROGMEM = "fre";
-static const prog_char str_res_prg[] PROGMEM = "prg";
+static const char str_res_syncltch[] PROGMEM = "syncltch";
+static const char str_res_polyseq[] PROGMEM = "polyseq";
+static const char str_res_arpeggio[] PROGMEM = "arpeggio";
+static const char str_res_bpm_cntr[] PROGMEM = "bpm cntr";
+static const char str_res_cc_knob[] PROGMEM = "cc knob";
+static const char str_res_chordmem[] PROGMEM = "chordmem";
+static const char str_res_clock[] PROGMEM = "clock";
+static const char str_res_divider[] PROGMEM = "divider";
+static const char str_res_chnfiltr[] PROGMEM = "chnfiltr";
+static const char str_res_chnmergr[] PROGMEM = "chnmergr";
+static const char str_res_user_prg[] PROGMEM = "user prg";
+static const char str_res_dispatch[] PROGMEM = "dispatch";
+static const char str_res_drums[] PROGMEM = "drums";
+static const char str_res_monitor[] PROGMEM = "monitor";
+static const char str_res_randomiz[] PROGMEM = "randomiz";
+static const char str_res_contrllr[] PROGMEM = "contrllr";
+static const char str_res_splitter[] PROGMEM = "splitter";
+static const char str_res_delay[] PROGMEM = "delay";
+static const char str_res_scale[] PROGMEM = "scale";
+static const char str_res_sequencr[] PROGMEM = "sequencr";
+static const char str_res_cc_lfo[] PROGMEM = "cc lfo";
+static const char str_res_tanpura[] PROGMEM = "tanpura";
+static const char str_res_settings[] PROGMEM = "settings";
+static const char str_res_notenuke[] PROGMEM = "notenuke";
+static const char str_res_sysxdump[] PROGMEM = "sysxdump";
+static const char str_res__reset_[] PROGMEM = "!reset!";
+static const char str_res___v1_4__[] PROGMEM = "\xa5v1.4.1\xa5";
+static const char str_res_sndoff[] PROGMEM = "sndOff";
+static const char str_res_rstctr[] PROGMEM = "rstCtr";
+static const char str_res_lclctr[] PROGMEM = "lclCtr";
+static const char str_res_notoff[] PROGMEM = "notOff";
+static const char str_res_omnoff[] PROGMEM = "omnOff";
+static const char str_res_omnion[] PROGMEM = "omniOn";
+static const char str_res_monoon[] PROGMEM = "monoOn";
+static const char str_res_polyon[] PROGMEM = "polyOn";
+static const char str_res_sysx__[] PROGMEM = "sysx..";
+static const char str_res__sysx_[] PROGMEM = ".sysx.";
+static const char str_res___sysx[] PROGMEM = "..sysx";
+static const char str_res_start[] PROGMEM = "start";
+static const char str_res_stop[] PROGMEM = "stop";
+static const char str_res_cont_[] PROGMEM = "cont.";
+static const char str_res_reset[] PROGMEM = "reset";
+static const char str_res_chn[] PROGMEM = "chn";
+static const char str_res_ccc[] PROGMEM = "ccc";
+static const char str_res_clc[] PROGMEM = "clc";
+static const char str_res_cln[] PROGMEM = "cln";
+static const char str_res_all[] PROGMEM = "all";
+static const char str_res_rest[] PROGMEM = "rest";
+static const char str_res_tie[] PROGMEM = "tie";
+static const char str_res_exit[] PROGMEM = "exit";
+static const char str_res_off[] PROGMEM = "off";
+static const char str_res_on[] PROGMEM = "on";
+static const char str_res_no[] PROGMEM = "no";
+static const char str_res_yes[] PROGMEM = "yes";
+static const char str_res_xfe[] PROGMEM = "xFE";
+static const char str_res_let[] PROGMEM = "let";
+static const char str_res_flt[] PROGMEM = "flt";
+static const char str_res_rec[] PROGMEM = "rec";
+static const char str_res_dub[] PROGMEM = "dub";
+static const char str_res_run[] PROGMEM = "run";
+static const char str_res_bpm[] PROGMEM = "bpm";
+static const char str_res_grv[] PROGMEM = "grv";
+static const char str_res_amt[] PROGMEM = "amt";
+static const char str_res_tap[] PROGMEM = "tap";
+static const char str_res_swg[] PROGMEM = "swg";
+static const char str_res_shf[] PROGMEM = "shf";
+static const char str_res_psh[] PROGMEM = "psh";
+static const char str_res_lag[] PROGMEM = "lag";
+static const char str_res_hum[] PROGMEM = "hum";
+static const char str_res_mnk[] PROGMEM = "mnk";
+static const char str_res_val[] PROGMEM = "val";
+static const char str_res_num[] PROGMEM = "num";
+static const char str_res_typ[] PROGMEM = "typ";
+static const char str_res_cc_[] PROGMEM = "cc#";
+static const char str_res_nrp[] PROGMEM = "nrp";
+static const char str_res_min[] PROGMEM = "min";
+static const char str_res_max[] PROGMEM = "max";
+static const char str_res_mod[] PROGMEM = "mod";
+static const char str_res_ptn[] PROGMEM = "ptn";
+static const char str_res_len[] PROGMEM = "len";
+static const char str_res_euc[] PROGMEM = "euc";
+static const char str_res_int[] PROGMEM = "int";
+static const char str_res_ext[] PROGMEM = "ext";
+static const char str_res_not[] PROGMEM = "not";
+static const char str_res_clk[] PROGMEM = "clk";
+static const char str_res_pt1[] PROGMEM = "pt1";
+static const char str_res_pt2[] PROGMEM = "pt2";
+static const char str_res_pt3[] PROGMEM = "pt3";
+static const char str_res_pt4[] PROGMEM = "pt4";
+static const char str_res_cc1[] PROGMEM = "cc1";
+static const char str_res_cc2[] PROGMEM = "cc2";
+static const char str_res_cc3[] PROGMEM = "cc3";
+static const char str_res_cc4[] PROGMEM = "cc4";
+static const char str_res_cc5[] PROGMEM = "cc5";
+static const char str_res_cc6[] PROGMEM = "cc6";
+static const char str_res_cc7[] PROGMEM = "cc7";
+static const char str_res_cc8[] PROGMEM = "cc8";
+static const char str_res_inp[] PROGMEM = "inp";
+static const char str_res_out[] PROGMEM = "out";
+static const char str_res_spl[] PROGMEM = "spl";
+static const char str_res_low[] PROGMEM = "low";
+static const char str_res_upp[] PROGMEM = "upp";
+static const char str_res_vel[] PROGMEM = "vel";
+static const char str_res__c1[] PROGMEM = "#c1";
+static const char str_res__c2[] PROGMEM = "#c2";
+static const char str_res_cyc[] PROGMEM = "cyc";
+static const char str_res_pol[] PROGMEM = "pol";
+static const char str_res_rnd[] PROGMEM = "rnd";
+static const char str_res_stk[] PROGMEM = "stk";
+static const char str_res_dir[] PROGMEM = "dir";
+static const char str_res_up[] PROGMEM = "up";
+static const char str_res_dwn[] PROGMEM = "dwn";
+static const char str_res_u_d[] PROGMEM = "u&d";
+static const char str_res_pla[] PROGMEM = "pla";
+static const char str_res_chd[] PROGMEM = "chd";
+static const char str_res_oct[] PROGMEM = "oct";
+static const char str_res_dur[] PROGMEM = "dur";
+static const char str_res_lat[] PROGMEM = "lat";
+static const char str_res_div[] PROGMEM = "div";
+static const char str_res_den[] PROGMEM = "den";
+static const char str_res_4_1[] PROGMEM = "4/1";
+static const char str_res_3_1[] PROGMEM = "3/1";
+static const char str_res_2_1[] PROGMEM = "2/1";
+static const char str_res_3_2[] PROGMEM = "3/2";
+static const char str_res_1_1[] PROGMEM = "1/1";
+static const char str_res_3_4[] PROGMEM = "3/4";
+static const char str_res_2_3[] PROGMEM = "2/3";
+static const char str_res_1_2[] PROGMEM = "1/2";
+static const char str_res_3_8[] PROGMEM = "3/8";
+static const char str_res_1_3[] PROGMEM = "1/3";
+static const char str_res_1_4[] PROGMEM = "1/4";
+static const char str_res_1_6[] PROGMEM = "1/6";
+static const char str_res_1_8[] PROGMEM = "1/8";
+static const char str_res__12[] PROGMEM = "/12";
+static const char str_res__16[] PROGMEM = "/16";
+static const char str_res__24[] PROGMEM = "/24";
+static const char str_res__32[] PROGMEM = "/32";
+static const char str_res__48[] PROGMEM = "/48";
+static const char str_res__96[] PROGMEM = "/96";
+static const char str_res_rep[] PROGMEM = "rep";
+static const char str_res_trs[] PROGMEM = "trs";
+static const char str_res_dpl[] PROGMEM = "dpl";
+static const char str_res_off_[] PROGMEM = "off_";
+static const char str_res_mir[] PROGMEM = "mir";
+static const char str_res_alt[] PROGMEM = "alt";
+static const char str_res_trk[] PROGMEM = "trk";
+static const char str_res_roo[] PROGMEM = "roo";
+static const char str_res_scl[] PROGMEM = "scl";
+static const char str_res_voi[] PROGMEM = "voi";
+static const char str_res_hrm[] PROGMEM = "hrm";
+static const char str_res_chr[] PROGMEM = "chr";
+static const char str_res_ion[] PROGMEM = "ion";
+static const char str_res_dor[] PROGMEM = "dor";
+static const char str_res_phr[] PROGMEM = "phr";
+static const char str_res_lyd[] PROGMEM = "lyd";
+static const char str_res_mix[] PROGMEM = "mix";
+static const char str_res_aeo[] PROGMEM = "aeo";
+static const char str_res_loc[] PROGMEM = "loc";
+static const char str_res_bmj[] PROGMEM = "bmj";
+static const char str_res_bmn[] PROGMEM = "bmn";
+static const char str_res_pmj[] PROGMEM = "pmj";
+static const char str_res_pmn[] PROGMEM = "pmn";
+static const char str_res_bhr[] PROGMEM = "bhr";
+static const char str_res_shr[] PROGMEM = "shr";
+static const char str_res_rup[] PROGMEM = "rup";
+static const char str_res_tod[] PROGMEM = "tod";
+static const char str_res_rag[] PROGMEM = "rag";
+static const char str_res_kaa[] PROGMEM = "kaa";
+static const char str_res_meg[] PROGMEM = "meg";
+static const char str_res_mlk[] PROGMEM = "mlk";
+static const char str_res_dpk[] PROGMEM = "dpk";
+static const char str_res_flk[] PROGMEM = "flk";
+static const char str_res_jap[] PROGMEM = "jap";
+static const char str_res_gam[] PROGMEM = "gam";
+static const char str_res_whl[] PROGMEM = "whl";
+static const char str_res_key[] PROGMEM = "key";
+static const char str_res__[] PROGMEM = "";
+static const char str_res_stp[] PROGMEM = "stp";
+static const char str_res_1[] PROGMEM = "";
+static const char str_res_2[] PROGMEM = "";
+static const char str_res_3[] PROGMEM = "";
+static const char str_res_4[] PROGMEM = "";
+static const char str_res_am1[] PROGMEM = "am1";
+static const char str_res_am2[] PROGMEM = "am2";
+static const char str_res_am3[] PROGMEM = "am3";
+static const char str_res_am4[] PROGMEM = "am4";
+static const char str_res_ce1[] PROGMEM = "ce1";
+static const char str_res_ce2[] PROGMEM = "ce2";
+static const char str_res_ce3[] PROGMEM = "ce3";
+static const char str_res_ce4[] PROGMEM = "ce4";
+static const char str_res_wf1[] PROGMEM = "wf1";
+static const char str_res_wf2[] PROGMEM = "wf2";
+static const char str_res_wf3[] PROGMEM = "wf3";
+static const char str_res_wf4[] PROGMEM = "wf4";
+static const char str_res_rt1[] PROGMEM = "rt1";
+static const char str_res_rt2[] PROGMEM = "rt2";
+static const char str_res_rt3[] PROGMEM = "rt3";
+static const char str_res_rt4[] PROGMEM = "rt4";
+static const char str_res_sy1[] PROGMEM = "sy1";
+static const char str_res_sy2[] PROGMEM = "sy2";
+static const char str_res_sy3[] PROGMEM = "sy3";
+static const char str_res_sy4[] PROGMEM = "sy4";
+static const char str_res_tri[] PROGMEM = "tri";
+static const char str_res_sqr[] PROGMEM = "sqr";
+static const char str_res_rmp[] PROGMEM = "rmp";
+static const char str_res_sin[] PROGMEM = "sin";
+static const char str_res_si2[] PROGMEM = "si2";
+static const char str_res_si3[] PROGMEM = "si3";
+static const char str_res_si5[] PROGMEM = "si5";
+static const char str_res_gg1[] PROGMEM = "gg1";
+static const char str_res_gg2[] PROGMEM = "gg2";
+static const char str_res_bt1[] PROGMEM = "bt1";
+static const char str_res_bt2[] PROGMEM = "bt2";
+static const char str_res_sp1[] PROGMEM = "sp1";
+static const char str_res_sp2[] PROGMEM = "sp2";
+static const char str_res_lp1[] PROGMEM = "lp1";
+static const char str_res_lp2[] PROGMEM = "lp2";
+static const char str_res_rs1[] PROGMEM = "rs1";
+static const char str_res_rs2[] PROGMEM = "rs2";
+static const char str_res_s_h[] PROGMEM = "s&h";
+static const char str_res_pa[] PROGMEM = "pa";
+static const char str_res_ma[] PROGMEM = "ma";
+static const char str_res_ni[] PROGMEM = "ni";
+static const char str_res_sa[] PROGMEM = "sa";
+static const char str_res_res[] PROGMEM = "res";
+static const char str_res_fre[] PROGMEM = "fre";
+static const char str_res_prg[] PROGMEM = "prg";
 
 
-PROGMEM const prog_char* string_table[] = {
+const char* const string_table[] PROGMEM = {
   str_res_syncltch,
   str_res_polyseq,
   str_res_arpeggio,
@@ -492,12 +492,12 @@ PROGMEM const prog_char* string_table[] = {
   str_res_prg,
 };
 
-const prog_uint16_t lut_res_arpeggiator_patterns[] PROGMEM = {
+const uint16_t lut_res_arpeggiator_patterns[] PROGMEM = {
    21845,  62965,  46517,  54741,  43861,  22869,  38293,   2313,
    37449,  21065,  18761,  54553,  27499,  23387,  30583,  28087,
    22359,  28527,  30431,  43281,  28609,  53505,
 };
-const prog_uint16_t lut_res_drum_patterns[] PROGMEM = {
+const uint16_t lut_res_drum_patterns[] PROGMEM = {
        0,  18705,   4369,  18761,   1281,    257,  21065,    261,
    10561,   1089,  42049,  16705,      0,  16530,   4112,   4624,
     4176,  37008,   4752,   4624,  18700,  16400,  18448,  36880,
@@ -505,31 +505,31 @@ const prog_uint16_t lut_res_drum_patterns[] PROGMEM = {
    54741,  30583,  25666,  65535,      0,  18504,  21761,  18688,
    61456,  42116,   4168,  16657,   5193,  21845,  22616,  25253,
 };
-const prog_uint16_t lut_res_groove_swing[] PROGMEM = {
+const int16_t lut_res_groove_swing[] PROGMEM = {
      127,    127,   -127,   -127,    127,    127,   -127,   -127,
      127,    127,   -127,   -127,    127,    127,   -127,   -127,
 };
-const prog_uint16_t lut_res_groove_shuffle[] PROGMEM = {
+const int16_t lut_res_groove_shuffle[] PROGMEM = {
      127,   -127,    127,   -127,    127,   -127,    127,   -127,
      127,   -127,    127,   -127,    127,   -127,    127,   -127,
 };
-const prog_uint16_t lut_res_groove_push[] PROGMEM = {
+const int16_t lut_res_groove_push[] PROGMEM = {
      -63,    -63,    127,      0,   -127,      0,      0,     88,
        0,      0,     88,    -50,    -88,      0,     88,      0,
 };
-const prog_uint16_t lut_res_groove_lag[] PROGMEM = {
+const int16_t lut_res_groove_lag[] PROGMEM = {
       19,     44,     93,     -4,     32,    -53,    -90,   -127,
      117,     32,   -102,    -53,    105,    -53,     93,    -53,
 };
-const prog_uint16_t lut_res_groove_human[] PROGMEM = {
+const int16_t lut_res_groove_human[] PROGMEM = {
       88,   -101,    107,    -95,     88,    -88,     50,    -38,
       65,    -88,    101,    -95,    101,   -127,     63,    -31,
 };
-const prog_uint16_t lut_res_groove_monkey[] PROGMEM = {
+const int16_t lut_res_groove_monkey[] PROGMEM = {
       70,    -84,     84,   -112,     84,    -98,    112,    -98,
       54,    -70,    127,    -84,    127,   -112,     84,    -84,
 };
-const prog_uint16_t lut_res_euclidian_patterns[] PROGMEM = {
+const uint16_t lut_res_euclidian_patterns[] PROGMEM = {
        0,      1,      3,      7,     15,     63,    127,    255,
     1023,   4095,  16383,  65535,      0,      1,      3,      7,
       15,     63,    127,    255,   1023,   4095,  16383,  65535,
@@ -549,118 +549,118 @@ const prog_uint16_t lut_res_euclidian_patterns[] PROGMEM = {
    11997,  16125,  16383,  65535,      0,      1,    257,   2113,
     4369,  10537,  21161,  21845,  44461,  56797,  65021,  65535,
 };
-const prog_uint16_t lut_res_scale_0[] PROGMEM = {
+const uint16_t lut_res_scale_0[] PROGMEM = {
        0,      1,      2,      3,      4,      5,      6,      7,
        8,      9,     10,     11,
 };
-const prog_uint16_t lut_res_scale_1[] PROGMEM = {
+const uint16_t lut_res_scale_1[] PROGMEM = {
        0,      0,      2,      2,      4,      5,      5,      7,
        7,      9,      9,     11,
 };
-const prog_uint16_t lut_res_scale_2[] PROGMEM = {
+const uint16_t lut_res_scale_2[] PROGMEM = {
        0,      0,      2,      3,      3,      5,      5,      7,
        7,      9,     10,     10,
 };
-const prog_uint16_t lut_res_scale_3[] PROGMEM = {
+const uint16_t lut_res_scale_3[] PROGMEM = {
        0,      1,      1,      3,      3,      5,      5,      7,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_scale_4[] PROGMEM = {
+const uint16_t lut_res_scale_4[] PROGMEM = {
        0,      0,      2,      2,      4,      4,      6,      7,
        7,      9,      9,     11,
 };
-const prog_uint16_t lut_res_scale_5[] PROGMEM = {
+const uint16_t lut_res_scale_5[] PROGMEM = {
        0,      0,      2,      2,      4,      5,      5,      7,
        7,      9,     10,     10,
 };
-const prog_uint16_t lut_res_scale_6[] PROGMEM = {
+const uint16_t lut_res_scale_6[] PROGMEM = {
        0,      0,      2,      3,      3,      5,      5,      7,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_scale_7[] PROGMEM = {
+const uint16_t lut_res_scale_7[] PROGMEM = {
        0,      1,      1,      3,      3,      5,      6,      6,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_scale_8[] PROGMEM = {
+const uint16_t lut_res_scale_8[] PROGMEM = {
        0,      0,      3,      3,      4,      4,      7,      7,
        7,      9,     10,     10,
 };
-const prog_uint16_t lut_res_scale_9[] PROGMEM = {
+const uint16_t lut_res_scale_9[] PROGMEM = {
        0,      0,      3,      3,      3,      5,      6,      7,
        7,     10,     10,     10,
 };
-const prog_uint16_t lut_res_scale_10[] PROGMEM = {
+const uint16_t lut_res_scale_10[] PROGMEM = {
        0,      0,      2,      2,      4,      4,      7,      7,
        7,      9,      9,      9,
 };
-const prog_uint16_t lut_res_scale_11[] PROGMEM = {
+const uint16_t lut_res_scale_11[] PROGMEM = {
        0,      0,      3,      3,      3,      5,      5,      7,
        7,     10,     10,     10,
 };
-const prog_uint16_t lut_res_scale_12[] PROGMEM = {
+const uint16_t lut_res_scale_12[] PROGMEM = {
        0,      1,      1,      4,      4,      5,      5,      7,
        8,      8,     11,     11,
 };
-const prog_uint16_t lut_res_scale_13[] PROGMEM = {
+const uint16_t lut_res_scale_13[] PROGMEM = {
        0,      1,      1,      4,      4,      4,      6,      7,
        8,      8,     11,     11,
 };
-const prog_uint16_t lut_res_scale_14[] PROGMEM = {
+const uint16_t lut_res_scale_14[] PROGMEM = {
        0,      1,      1,      3,      3,      5,      5,      7,
        7,     10,     10,     11,
 };
-const prog_uint16_t lut_res_scale_15[] PROGMEM = {
+const uint16_t lut_res_scale_15[] PROGMEM = {
        0,      1,      1,      3,      3,      6,      6,      7,
        8,      8,     11,     11,
 };
-const prog_uint16_t lut_res_scale_16[] PROGMEM = {
+const uint16_t lut_res_scale_16[] PROGMEM = {
        0,      0,      2,      2,      4,      5,      5,      5,
        9,      9,     10,     11,
 };
-const prog_uint16_t lut_res_scale_18[] PROGMEM = {
+const uint16_t lut_res_scale_18[] PROGMEM = {
        0,      0,      2,      2,      5,      5,      5,      7,
        7,      9,      9,      9,
 };
-const prog_uint16_t lut_res_scale_19[] PROGMEM = {
+const uint16_t lut_res_scale_19[] PROGMEM = {
        0,      0,      3,      3,      3,      5,      5,      8,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_scale_20[] PROGMEM = {
+const uint16_t lut_res_scale_20[] PROGMEM = {
        0,      0,      3,      3,      4,      4,      6,      6,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_scale_21[] PROGMEM = {
+const uint16_t lut_res_scale_21[] PROGMEM = {
        0,      1,      1,      3,      4,      5,      5,      7,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_scale_22[] PROGMEM = {
+const uint16_t lut_res_scale_22[] PROGMEM = {
        0,      1,      1,      1,      5,      5,      5,      7,
        8,      8,      8,      8,
 };
-const prog_uint16_t lut_res_scale_23[] PROGMEM = {
+const uint16_t lut_res_scale_23[] PROGMEM = {
        0,      1,      1,      3,      3,      3,      7,      7,
        8,      8,      8,      8,
 };
-const prog_uint16_t lut_res_scale_24[] PROGMEM = {
+const uint16_t lut_res_scale_24[] PROGMEM = {
        0,      0,      2,      2,      4,      4,      6,      6,
        8,      8,     10,     10,
 };
-const prog_uint16_t lut_res_increments[] PROGMEM = {
+const uint16_t lut_res_increments[] PROGMEM = {
      170,    227,    341,    455,    682,    910,   1024,   1365,
     1820,   2048,   2730,   4096,   5461,   8192,  10922,  16384,
    21845,  32768,  65535,
 };
 
 
-PROGMEM const prog_uint16_t* lookup_table_table[] = {
+const uint16_t* const lookup_table_table[] PROGMEM = {
   lut_res_arpeggiator_patterns,
   lut_res_drum_patterns,
-  lut_res_groove_swing,
-  lut_res_groove_shuffle,
-  lut_res_groove_push,
-  lut_res_groove_lag,
-  lut_res_groove_human,
-  lut_res_groove_monkey,
+  reinterpret_cast<const uint16_t*>(lut_res_groove_swing),
+  reinterpret_cast<const uint16_t*>(lut_res_groove_shuffle),
+  reinterpret_cast<const uint16_t*>(lut_res_groove_push),
+  reinterpret_cast<const uint16_t*>(lut_res_groove_lag),
+  reinterpret_cast<const uint16_t*>(lut_res_groove_human),
+  reinterpret_cast<const uint16_t*>(lut_res_groove_monkey),
   lut_res_euclidian_patterns,
   lut_res_scale_0,
   lut_res_scale_1,
@@ -690,7 +690,7 @@ PROGMEM const prog_uint16_t* lookup_table_table[] = {
   lut_res_increments,
 };
 
-const prog_uint8_t chr_res_digits_10[] PROGMEM = {
+const uint8_t chr_res_digits_10[] PROGMEM = {
       16,     16,     16,     22,      9,      9,      9,      6,
       16,     16,     16,     22,      2,      2,      2,      7,
       16,     16,     16,     22,      9,      2,      4,     15,
@@ -699,7 +699,7 @@ const prog_uint8_t chr_res_digits_10[] PROGMEM = {
       16,     16,     16,     23,      4,      6,      1,      6,
       16,     16,     16,     19,      4,      7,      5,      7,
 };
-const prog_uint8_t chr_res_sequencer_icons[] PROGMEM = {
+const uint8_t chr_res_sequencer_icons[] PROGMEM = {
        2,      3,      3,      2,      2,     14,     30,     12,
        0,      0,      0,     28,     20,     20,     23,      0,
        0,      1,      3,      7,     15,     31,     31,      0,
@@ -707,12 +707,12 @@ const prog_uint8_t chr_res_sequencer_icons[] PROGMEM = {
 };
 
 
-const prog_uint8_t* character_table[] = {
+const uint8_t* const character_table[] = {
   chr_res_digits_10,
   chr_res_sequencer_icons,
 };
 
-const prog_uint8_t wav_res_lfo_waveforms[] PROGMEM = {
+const uint8_t wav_res_lfo_waveforms[] PROGMEM = {
        1,      5,      9,     13,     17,     21,     25,     29,
       33,     37,     41,     44,     48,     52,     56,     60,
       64,     68,     72,     76,     80,     84,     88,     92,
@@ -991,9 +991,10 @@ const prog_uint8_t wav_res_lfo_waveforms[] PROGMEM = {
 };
 
 
-const prog_uint8_t* waveform_table[] = {
+const uint8_t* const waveform_table[] = {
   wav_res_lfo_waveforms,
 };
 
 
 }  // namespace midipal
+

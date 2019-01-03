@@ -35,7 +35,7 @@ class AppSelector {
   static uint8_t OnIncrement(int8_t increment);
   static uint8_t OnRedraw();
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_;
  
  private:
   static uint8_t active_app_;

@@ -36,51 +36,51 @@ namespace midipal {
 
 typedef uint8_t ResourceId;
 
-extern const prog_char* string_table[];
+extern const char* const string_table[] PROGMEM;
 
-extern const prog_uint16_t* lookup_table_table[];
+extern const uint16_t* const lookup_table_table[] PROGMEM;
 
-extern const prog_uint8_t* character_table[];
+extern const uint8_t* const character_table[] PROGMEM;
 
-extern const prog_uint8_t* waveform_table[];
+extern const uint8_t* const waveform_table[] PROGMEM;
 
-extern const prog_uint16_t lut_res_arpeggiator_patterns[] PROGMEM;
-extern const prog_uint16_t lut_res_drum_patterns[] PROGMEM;
-extern const prog_uint16_t lut_res_groove_swing[] PROGMEM;
-extern const prog_uint16_t lut_res_groove_shuffle[] PROGMEM;
-extern const prog_uint16_t lut_res_groove_push[] PROGMEM;
-extern const prog_uint16_t lut_res_groove_lag[] PROGMEM;
-extern const prog_uint16_t lut_res_groove_human[] PROGMEM;
-extern const prog_uint16_t lut_res_groove_monkey[] PROGMEM;
-extern const prog_uint16_t lut_res_euclidian_patterns[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_0[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_1[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_2[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_3[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_4[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_5[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_6[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_7[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_8[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_9[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_10[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_11[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_12[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_13[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_14[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_15[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_16[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_18[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_19[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_20[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_21[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_22[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_23[] PROGMEM;
-extern const prog_uint16_t lut_res_scale_24[] PROGMEM;
-extern const prog_uint16_t lut_res_increments[] PROGMEM;
-extern const prog_uint8_t chr_res_digits_10[] PROGMEM;
-extern const prog_uint8_t chr_res_sequencer_icons[] PROGMEM;
-extern const prog_uint8_t wav_res_lfo_waveforms[] PROGMEM;
+extern const uint16_t lut_res_arpeggiator_patterns[] PROGMEM;
+extern const uint16_t lut_res_drum_patterns[] PROGMEM;
+extern const int16_t lut_res_groove_swing[] PROGMEM;
+extern const int16_t lut_res_groove_shuffle[] PROGMEM;
+extern const int16_t lut_res_groove_push[] PROGMEM;
+extern const int16_t lut_res_groove_lag[] PROGMEM;
+extern const int16_t lut_res_groove_human[] PROGMEM;
+extern const int16_t lut_res_groove_monkey[] PROGMEM;
+extern const uint16_t lut_res_euclidian_patterns[] PROGMEM;
+extern const uint16_t lut_res_scale_0[] PROGMEM;
+extern const uint16_t lut_res_scale_1[] PROGMEM;
+extern const uint16_t lut_res_scale_2[] PROGMEM;
+extern const uint16_t lut_res_scale_3[] PROGMEM;
+extern const uint16_t lut_res_scale_4[] PROGMEM;
+extern const uint16_t lut_res_scale_5[] PROGMEM;
+extern const uint16_t lut_res_scale_6[] PROGMEM;
+extern const uint16_t lut_res_scale_7[] PROGMEM;
+extern const uint16_t lut_res_scale_8[] PROGMEM;
+extern const uint16_t lut_res_scale_9[] PROGMEM;
+extern const uint16_t lut_res_scale_10[] PROGMEM;
+extern const uint16_t lut_res_scale_11[] PROGMEM;
+extern const uint16_t lut_res_scale_12[] PROGMEM;
+extern const uint16_t lut_res_scale_13[] PROGMEM;
+extern const uint16_t lut_res_scale_14[] PROGMEM;
+extern const uint16_t lut_res_scale_15[] PROGMEM;
+extern const uint16_t lut_res_scale_16[] PROGMEM;
+extern const uint16_t lut_res_scale_18[] PROGMEM;
+extern const uint16_t lut_res_scale_19[] PROGMEM;
+extern const uint16_t lut_res_scale_20[] PROGMEM;
+extern const uint16_t lut_res_scale_21[] PROGMEM;
+extern const uint16_t lut_res_scale_22[] PROGMEM;
+extern const uint16_t lut_res_scale_23[] PROGMEM;
+extern const uint16_t lut_res_scale_24[] PROGMEM;
+extern const uint16_t lut_res_increments[] PROGMEM;
+extern const uint8_t chr_res_digits_10[] PROGMEM;
+extern const uint8_t chr_res_sequencer_icons[] PROGMEM;
+extern const uint8_t wav_res_lfo_waveforms[] PROGMEM;
 #define STR_RES_SYNCLTCH 0  // syncltch
 #define STR_RES_POLYSEQ 1  // polyseq
 #define STR_RES_ARPEGGIO 2  // arpeggio
@@ -107,7 +107,7 @@ extern const prog_uint8_t wav_res_lfo_waveforms[] PROGMEM;
 #define STR_RES_NOTENUKE 23  // notenuke
 #define STR_RES_SYSXDUMP 24  // sysxdump
 #define STR_RES__RESET_ 25  // !reset!
-#define STR_RES___V1_4__ 26  // ¥ v1.4 ¥
+#define STR_RES___V1_4__ 26  // Â¥ v1.4 Â¥
 #define STR_RES_SNDOFF 27  // sndOff
 #define STR_RES_RSTCTR 28  // rstCtr
 #define STR_RES_LCLCTR 29  // lclCtr

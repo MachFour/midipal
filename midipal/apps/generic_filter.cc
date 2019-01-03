@@ -33,7 +33,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t generic_filter_factory_data[1] PROGMEM = { 0 };
+const uint8_t generic_filter_factory_data[1] PROGMEM = { 0 };
 
 /* static */
 Modifier GenericFilter::modifiers_[kNumModifiers];
@@ -42,7 +42,7 @@ Modifier GenericFilter::modifiers_[kNumModifiers];
 uint8_t GenericFilter::active_program_;
 
 /* static */
-const prog_AppInfo GenericFilter::app_info_ PROGMEM = {
+const AppInfo GenericFilter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

@@ -23,7 +23,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t clock_divider_factory_data[2] PROGMEM = {
+const uint8_t clock_divider_factory_data[2] PROGMEM = {
   1, 0,
 };
 
@@ -44,7 +44,7 @@ bool ClockDivider::running_;
 
 
 /* static */
-const prog_AppInfo ClockDivider::app_info_ PROGMEM = {
+const AppInfo ClockDivider::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

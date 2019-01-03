@@ -31,7 +31,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t dispatcher_factory_data[5] PROGMEM = {
+const uint8_t dispatcher_factory_data[5] PROGMEM = {
   0, 0, 0, 3, 1
 };
 
@@ -54,7 +54,7 @@ uint8_t Dispatcher::polyphony_voices_;
 uint8_t Dispatcher::counter_;
 
 /* static */
-const prog_AppInfo Dispatcher::app_info_ PROGMEM = {
+const AppInfo Dispatcher::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

@@ -27,7 +27,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t cc_knob_factory_data[6] PROGMEM = {
+const uint8_t cc_knob_factory_data[6] PROGMEM = {
   63, 0, 0, 7, 0, 127
 };
 
@@ -50,7 +50,7 @@ uint8_t CcKnob::min_;
 uint8_t CcKnob::max_;
 
 /* static */
-const prog_AppInfo CcKnob::app_info_ PROGMEM = {
+const AppInfo CcKnob::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

@@ -31,7 +31,7 @@ class ClockDivider {
   static void OnInit();
   static void OnRawByte(uint8_t byte);
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static uint8_t divider_;

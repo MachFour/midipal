@@ -28,7 +28,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t clock_source_factory_data[5] PROGMEM = {
+const uint8_t clock_source_factory_data[5] PROGMEM = {
   0, 120, 0, 0, 0
 };
 
@@ -54,7 +54,7 @@ uint8_t ClockSource::num_taps_;
 uint32_t ClockSource::elapsed_time_;
 
 /* static */
-const prog_AppInfo ClockSource::app_info_ PROGMEM = {
+const AppInfo ClockSource::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

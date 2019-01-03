@@ -158,7 +158,6 @@ void Ui::DoEvents() {
       // Internal handling of the encoder.
       if (!app.OnIncrement(e.value)) {
         if (editing_) {
-          int16_t v;
           if (page_def.value_res_id == UNIT_SIGNED_INTEGER) {
             int16_t v = static_cast<int8_t>(app.GetParameter(page_));
             v = Clip(
@@ -242,9 +241,9 @@ void Ui::DoEvents() {
   display.Tick();
 }
 
-static const prog_char note_names[] PROGMEM =      " CC# DD# E FF# GG# AA# B";
-static const prog_char note_names_flat[] PROGMEM = " CDb DEb E FGb GAb ABb B";
-static const prog_char octaves[] PROGMEM = "-012345678";
+static const char note_names[] PROGMEM =      " CC# DD# E FF# GG# AA# B";
+static const char note_names_flat[] PROGMEM = " CDb DEb E FGb GAb ABb B";
+static const char octaves[] PROGMEM = "-012345678";
 
 /* static */
 void Ui::PrintKeyValuePair(
@@ -346,13 +345,10 @@ void Ui::PrintNote(char* buffer, uint8_t note, bool flat) {
     ++octave;
     note -= 12;
   }
-  const prog_char* table = flat ? note_names_flat : note_names;
-  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(
-      table, note << 1);
-  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(
-      table, 1 + (note << 1));
-  *buffer = ResourcesManager::Lookup<char, uint8_t>(
-      octaves, octave);
+  const char* const table = flat ? note_names_flat : note_names;
+  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(table, note << 1);
+  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(table, 1 + (note << 1));
+  *buffer = ResourcesManager::Lookup<char, uint8_t>(octaves, octave);
 }
 
 /* static */

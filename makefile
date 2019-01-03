@@ -10,7 +10,7 @@
 # GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 include midipal/makefile
 
 bake_all: build/midipal/midipal.hex
@@ -20,7 +20,6 @@ bake_all: build/midipal/midipal.hex
 			-U hfuse:w:0x$(HFUSE):m \
 			-U lfuse:w:0x$(LFUSE):m
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 1 \
-			-U eeprom:w:midipal/data/midipal_eeprom_golden.hex:i \
 			-U flash:w:build/midipal/midipal.hex:i \
 			-U flash:w:build/muboot/muboot.hex:i
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 1 \
@@ -33,7 +32,6 @@ yes_bake_all: build/midipal/midipal.hex
 			-U hfuse:w:0x$(HFUSE):m \
 			-U lfuse:w:0x$(LFUSE):m
 		yes | $(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 1 \
-			-U eeprom:w:midipal/data/midipal_eeprom_golden.hex:i \
 			-U flash:w:build/midipal/midipal.hex:i \
 			-U flash:w:build/muboot/muboot.hex:i
 		yes | $(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 1 \

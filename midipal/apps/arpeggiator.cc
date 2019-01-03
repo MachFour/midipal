@@ -43,7 +43,7 @@ enum ArpeggiatorDirection {
   ARPEGGIO_DIRECTION_CHORD
 };
 
-const prog_uint8_t arpeggiator_factory_data[12] PROGMEM = {
+const uint8_t arpeggiator_factory_data[12] PROGMEM = {
   0, 120, 0, 0, 0, 0, 1, 0, 16, 12, 14, 0
 };
 
@@ -76,7 +76,7 @@ uint8_t Arpeggiator::recording_;
 /* </static> */
 
 /* static */
-const prog_AppInfo Arpeggiator::app_info_ PROGMEM = {
+const AppInfo Arpeggiator::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -278,7 +278,7 @@ void Arpeggiator::Tick() {
       }
     }
     bitmask_ <<= 1;
-    if (bitmask_ == (1 << pattern_length_) || bitmask_ == 0) {
+    if (bitmask_ == (1u << pattern_length_) || bitmask_ == 0) {
       bitmask_ = 1;
     }
   }

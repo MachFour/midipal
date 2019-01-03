@@ -32,7 +32,7 @@ class Settings {
   static void OnInit();
   static void OnRawByte(uint8_t byte);
  
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
  
   static uint8_t filter_active_sensing() { return filter_active_sensing_; }
   static uint8_t remote_control_channel() { return remote_control_channel_; }

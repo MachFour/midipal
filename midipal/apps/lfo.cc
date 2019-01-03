@@ -30,7 +30,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t lfo_factory_data[31] PROGMEM = {
+const uint8_t lfo_factory_data[31] PROGMEM = {
   0, 0, 120, 0, 0, 16, 0,
   
   7, 63, 63, 0, 2, 0,
@@ -58,7 +58,7 @@ uint8_t Lfo::midi_clock_prescaler_;
 /* </static> */
 
 /* static */
-const prog_AppInfo Lfo::app_info_ PROGMEM = {
+const AppInfo Lfo::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

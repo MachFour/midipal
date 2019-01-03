@@ -38,7 +38,7 @@ class Transposer {
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity);
 
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
 
  protected:
   static uint8_t channel_;

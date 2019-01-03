@@ -38,7 +38,7 @@ class CcKnob {
   static void SetParameter(uint8_t key, uint8_t value);
   static uint8_t GetParameter(uint8_t key);
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static uint8_t value_;

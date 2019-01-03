@@ -35,7 +35,7 @@ class Splitter {
      uint8_t data_size,
      uint8_t accepted_channel);
  
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
  
  private:
   static uint8_t input_channel_;

@@ -54,7 +54,7 @@ uint8_t SysExHandler::checksum_;
 /* static */
 uint8_t SysExHandler::command_[2];
 
-static const prog_char header[] PROGMEM = {
+static const uint8_t header[] PROGMEM = {
   0xf0,  // <SysEx>
   0x00, 0x21, 0x02,  // Mutable Instruments manufacturer ID.
   0x00, 0x03,  // Product ID for MIDIpal.

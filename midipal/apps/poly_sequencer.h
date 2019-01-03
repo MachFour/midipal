@@ -52,7 +52,7 @@ class PolySequencer {
 
   static void SetParameter(uint8_t key, uint8_t value);
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   // Record a note (midi note#) ; 0xfe for tie ; 0xff for rest.

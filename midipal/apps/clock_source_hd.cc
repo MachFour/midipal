@@ -31,7 +31,7 @@ namespace midipal { namespace apps {
   
 using namespace avrlib;
 
-const prog_uint8_t clock_source_factory_data[4] PROGMEM = {
+const uint8_t clock_source_factory_data[4] PROGMEM = {
   0, 120, 0, 0
 };
 
@@ -57,7 +57,7 @@ uint8_t ClockSourceHD::num_taps_;
 uint32_t ClockSourceHD::elapsed_time_;
 
 /* static */
-const prog_AppInfo ClockSourceHD::app_info_ PROGMEM = {
+const AppInfo ClockSourceHD::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -151,8 +151,8 @@ uint8_t ClockSourceHD::OnClick() {
       num_taps_ = 0;
       elapsed_time_ = 0;
     }
-    ++num_taps_;
-    return 1;*/
+    ++num_taps_;*/
+    return 1;
   } else {
     return 0;
   }

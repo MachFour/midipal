@@ -28,7 +28,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t clock_source_factory_data[6] PROGMEM = {
+const uint8_t clock_source_factory_data[6] PROGMEM = {
   0, 120, 1, 1, 0, 24
 };
 
@@ -60,7 +60,7 @@ uint8_t ClockSourceLive::num_ticks_;
 uint32_t ClockSourceLive::elapsed_time_;
 
 /* static */
-const prog_AppInfo ClockSourceLive::app_info_ PROGMEM = {
+const AppInfo ClockSourceLive::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -107,7 +107,7 @@ void ClockSourceLive::OnInit() {
   num_taps_ = 0;
 }
 
-static const prog_uint8_t ratios[] PROGMEM = {
+static const uint8_t ratios[] PROGMEM = {
   0x13, 0x12, 0x23, 0x34, 0x11, 0x54, 0x43, 0x32, 0x53, 0x74, 0x21, 0x94,
   0x73, 0x52, 0x00, 0x00, 0x11
 };

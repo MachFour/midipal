@@ -87,7 +87,8 @@ struct AppInfo {
   uint16_t settings_size;
   uint16_t settings_offset;
   uint8_t* settings_data;
-  const prog_uint8_t* factory_data;
+  // stored in program memory
+  const uint8_t* factory_data;
   uint8_t app_name;
   
   // Whether the app can respond to a clock message within 50µs. Set this to
@@ -97,8 +98,6 @@ struct AppInfo {
   // a couple of MIDI messages or does nothing on clock ticks.
   bool realtime_clock_handling;
 };
-
-typedef AppInfo PROGMEM prog_AppInfo;
 
 class App {
  public:
@@ -248,7 +247,8 @@ class App {
   static uint16_t settings_size() { return app_info_.settings_size; }
   static uint16_t settings_offset() { return app_info_.settings_offset; }
   static uint8_t* settings_data() { return app_info_.settings_data; }
-  static const prog_uint8_t* factory_data() { return app_info_.factory_data; }
+  // in PROGMEM
+  static const uint8_t* factory_data() { return app_info_.factory_data; }
   static uint8_t app_name() { return app_info_.app_name; }
   static bool realtime_clock_handling() {
     return app_info_.realtime_clock_handling;
@@ -276,7 +276,7 @@ class App {
   DISALLOW_COPY_AND_ASSIGN(App);
 };
 
-extern const prog_uint8_t midi_clock_tick_per_step[];
+extern const uint8_t midi_clock_tick_per_step[] PROGMEM;
 
 extern App app;
 

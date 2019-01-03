@@ -25,7 +25,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t splitter_factory_data[4] PROGMEM = {
+const uint8_t splitter_factory_data[4] PROGMEM = {
   0, 48, 0, 1
 };
 
@@ -42,7 +42,7 @@ uint8_t Splitter::lower_channel_;
 uint8_t Splitter::upper_channel_;
 
 /* static */
-const prog_AppInfo Splitter::app_info_ PROGMEM = {
+const AppInfo Splitter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

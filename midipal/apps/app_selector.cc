@@ -39,7 +39,7 @@ uint8_t AppSelector::active_app_;
 uint8_t AppSelector::selected_item_;
 
 /* static */
-const prog_AppInfo AppSelector::app_info_ PROGMEM = {
+const AppInfo AppSelector::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

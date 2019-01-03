@@ -30,7 +30,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t tanpura_factory_data[8] PROGMEM = {
+const uint8_t tanpura_factory_data[8] PROGMEM = {
   0, 0, 120, 8, 0, 60, 0, 5
 };
 
@@ -50,7 +50,7 @@ uint8_t Tanpura::step_;
 /* </static> */
 
 /* static */
-const prog_AppInfo Tanpura::app_info_ PROGMEM = {
+const AppInfo Tanpura::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -202,8 +202,8 @@ void Tanpura::Start() {
   step_ = 0;
 }
 
-const prog_int8_t shifts[] PROGMEM = { -5, -7, -1, 0 };
-const prog_uint8_t durations[] PROGMEM = { 5, 0, 0, 0, 0, 1, 1, 2 };
+const int8_t shifts[] PROGMEM = { -5, -7, -1, 0 };
+const uint8_t durations[] PROGMEM = { 5, 0, 0, 0, 0, 1, 1, 2 };
 
 /* static */
 void Tanpura::Tick() {

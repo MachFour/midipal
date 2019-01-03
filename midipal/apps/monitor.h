@@ -54,7 +54,7 @@ class Monitor {
   
   static void OnIdle();
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static void PrintString(uint8_t channel, uint8_t res_id);

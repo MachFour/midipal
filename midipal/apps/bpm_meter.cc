@@ -42,7 +42,7 @@ uint8_t BpmMeter::active_page_;
 uint8_t BpmMeter::refresh_bpm_;
 
 /* static */
-const prog_AppInfo BpmMeter::app_info_ PROGMEM = {
+const AppInfo BpmMeter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

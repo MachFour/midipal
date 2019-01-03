@@ -41,7 +41,7 @@ class ClockSource {
   
   static void OnClock(uint8_t clock_source);
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static void Stop();

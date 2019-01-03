@@ -40,7 +40,7 @@ class ClockSourceHD {
   static uint8_t OnIncrement(int8_t increment);
   static void OnClock(uint8_t clock_source);
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static void Stop();

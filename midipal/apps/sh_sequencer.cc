@@ -32,7 +32,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t sequencer_factory_data[18] PROGMEM = {
+const uint8_t sequencer_factory_data[18] PROGMEM = {
   0, 0,
   0, 120, 0, 0, 12, 0, 8,
   48, 0xff, 48, 0xff, 60, 0xff, 60, 0xff,
@@ -62,7 +62,7 @@ uint8_t ShSequencer::pending_note_;
 /* </static> */
 
 /* static */
-const prog_AppInfo ShSequencer::app_info_ PROGMEM = {
+const AppInfo ShSequencer::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -134,7 +134,11 @@ void ShSequencer::SetParameter(uint8_t key, uint8_t value) {
   if (key == 1) {
     Stop();
     memset(sequence_data_, 60, sizeof(sequence_data_));
-    memset(slide_data_, 0, sizeof(slide_data_) * 2);
+    // XXX overflowing write!?
+    //memset(slide_data_, 0, sizeof(slide_data_) * 2);
+    // is it meant to write to accent_data_ too?
+    memset(slide_data_, 0, sizeof(slide_data_));
+    memset(accent_data_, 0, sizeof(accent_data_));
     recording_ = 1;
     rec_mode_menu_option_ = 0;
     num_steps_ = 0;
@@ -151,7 +155,7 @@ void ShSequencer::SetParameter(uint8_t key, uint8_t value) {
 uint8_t ShSequencer::OnRedraw() {
   if (recording_) {
     memset(line_buffer, 0, kLcdWidth);
-    line_buffer[0] = 0xa5;
+    line_buffer[0] = static_cast<char>(0xa5);
     UnsafeItoa(num_steps_, 2, &line_buffer[1]);
     PadRight(&line_buffer[1], 2, ' ');
     line_buffer[3] = '|';

@@ -28,7 +28,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t monitor_factory_data[1] PROGMEM = { 0 };
+const uint8_t monitor_factory_data[1] PROGMEM = { 0 };
 
 /* static */
 uint8_t Monitor::monitored_channel_;
@@ -37,7 +37,7 @@ uint8_t Monitor::monitored_channel_;
 uint8_t Monitor::idle_counter_;
 
 /* static */
-const prog_AppInfo Monitor::app_info_ PROGMEM = {
+const AppInfo Monitor::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -184,7 +184,7 @@ void Monitor::OnClock(uint8_t clock_mode) {
     return;
   }
   if (clock_mode == CLOCK_MODE_EXTERNAL) {
-    line_buffer[1] = 0xa5;
+    line_buffer[1] = static_cast<char>(0xa5);
     ui.RefreshScreen();
   }
 }

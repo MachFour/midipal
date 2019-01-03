@@ -25,7 +25,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t controller_factory_data[9] PROGMEM = {
+const uint8_t controller_factory_data[9] PROGMEM = {
   0, 7, 10, 74, 71, 73, 80, 72, 91
 };
 
@@ -36,7 +36,7 @@ uint8_t Controller::channel_;
 uint8_t Controller::cc_[8];
 
 /* static */
-const prog_AppInfo Controller::app_info_ PROGMEM = {
+const AppInfo Controller::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

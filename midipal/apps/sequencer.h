@@ -47,7 +47,7 @@ class Sequencer {
   static void SetParameter(uint8_t key, uint8_t value);
   static uint8_t CheckPageStatus(uint8_t index);
   
-  static const prog_AppInfo app_info_;
+  static const AppInfo app_info_ PROGMEM;
   
  private:
   static void Stop();

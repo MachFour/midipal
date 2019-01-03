@@ -26,7 +26,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t settings_factory_data[5] PROGMEM = {
+const uint8_t settings_factory_data[5] PROGMEM = {
   0, 0, 16, 84, 12,
 };
 
@@ -46,7 +46,7 @@ uint8_t Settings::note_clock_note_;
 uint8_t Settings::note_clock_ticks_;
 
 /* static */
-const prog_AppInfo Settings::app_info_ PROGMEM = {
+const AppInfo Settings::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -79,6 +79,7 @@ const prog_AppInfo Settings::app_info_ PROGMEM = {
   &filter_active_sensing_, // settings_data
   settings_factory_data, // factory_data
   STR_RES_SETTINGS, // app_name
+  true // realtime_clock_handling
 };  
 
 /* static */

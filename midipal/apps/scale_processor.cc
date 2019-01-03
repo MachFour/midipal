@@ -41,8 +41,8 @@ enum VoiceMode {
   
 using namespace avrlib;
 
-const prog_uint8_t scale_processor_factory_data[6] PROGMEM = {
-  0, 0, 1, 0, -12, 0
+const uint8_t scale_processor_factory_data[6] PROGMEM = {
+  0, 0, 1, 0, static_cast<uint8_t>(-12), 0
 };
 
 /* <static> */
@@ -60,7 +60,7 @@ uint8_t ScaleProcessor::flip_;
 /* </static> */
 
 /* static */
-const prog_AppInfo ScaleProcessor::app_info_ PROGMEM = {
+const AppInfo ScaleProcessor::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

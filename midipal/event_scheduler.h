@@ -57,9 +57,9 @@ class EventScheduler {
   static inline const SchedulerEntry& entry(uint8_t address) {
     return entries_[address];
   }
-  static inline const uint8_t root() { return root_ptr_; }
-  static inline const uint8_t size() { return size_; }
-  static inline const uint8_t overflow() {
+  static inline uint8_t root() { return root_ptr_; }
+  static inline uint8_t size() { return size_; }
+  static inline uint8_t overflow() {
     return size() >= kEventSchedulerSize - 8;
   }
 

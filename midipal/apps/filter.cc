@@ -26,7 +26,7 @@
 
 namespace midipal { namespace apps {
 
-const prog_uint8_t filter_factory_data[16] PROGMEM = {
+const uint8_t filter_factory_data[16] PROGMEM = {
   1, 0, 0, 0, 
   0, 0, 0, 0,
   0, 0, 0, 0,
@@ -37,7 +37,7 @@ const prog_uint8_t filter_factory_data[16] PROGMEM = {
 uint8_t Filter::channel_enabled_[16];
 
 /* static */
-const prog_AppInfo Filter::app_info_ PROGMEM = {
+const AppInfo Filter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);

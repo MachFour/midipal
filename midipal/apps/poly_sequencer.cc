@@ -30,7 +30,7 @@ namespace midipal { namespace apps {
 
 using namespace avrlib;
 
-const prog_uint8_t sequencer_factory_data[12] PROGMEM = {
+const uint8_t sequencer_factory_data[12] PROGMEM = {
   0, 0,
   0, 
   0,
@@ -68,7 +68,7 @@ uint8_t PolySequencer::pending_notes_transposed_[kPSNumTracks];
 /* </static> */
 
 /* static */
-const prog_AppInfo PolySequencer::app_info_ PROGMEM = {
+const AppInfo PolySequencer::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
@@ -167,7 +167,7 @@ uint8_t PolySequencer::OnRedraw() {
     memset(line_buffer, 0, kLcdWidth);
     UnsafeItoa(edit_step_, 3, &line_buffer[0]);
     PadRight(&line_buffer[0], 3, ' ');
-    line_buffer[3] = 0xa5;
+    line_buffer[3] = static_cast<char>(0xa5);
     ResourcesManager::LoadStringResource(
         STR_RES_REST + rec_mode_menu_option_,
         &line_buffer[4], 4);

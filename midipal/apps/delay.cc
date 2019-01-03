@@ -31,11 +31,11 @@ namespace midipal { namespace apps {
   
 using namespace avrlib;
 
-static const prog_uint8_t velocity_factor[16] PROGMEM = {
+static const uint8_t velocity_factor[16] PROGMEM = {
   31, 60, 87, 112, 134, 155, 174, 191, 206, 219, 230, 239, 246, 251, 253, 255
 };
 
-const prog_uint8_t delay_factory_data[10] PROGMEM = {
+const uint8_t delay_factory_data[10] PROGMEM = {
   0, 120, 0, 0, 0, 8, 4, 10, 0, 0
 };
 
@@ -55,7 +55,7 @@ uint8_t Delay::velocity_factor_reverse_log_;
 /* </static> */
 
 /* static */
-const prog_AppInfo Delay::app_info_ PROGMEM = {
+const AppInfo Delay::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
