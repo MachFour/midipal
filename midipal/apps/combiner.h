@@ -23,11 +23,19 @@
 #include "midipal/app.h"
 #include "midipal/note_map.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Combiner {
  public:
-  Combiner() { }
+  enum Parameter : uint8_t {
+    input_channel_,
+    num_channels_,
+    output_channel_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
   static void OnRawMidiData(
@@ -39,13 +47,19 @@ class Combiner {
   static const AppInfo app_info_ PROGMEM;
  
  private:
-  static uint8_t input_channel_;
-  static uint8_t num_channels_;
-  static uint8_t output_channel_;
+  static bool shouldMerge(uint8_t channel);
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static uint8_t& input_channel() { return ParameterValue(input_channel_); }
+  static uint8_t& num_channels() { return ParameterValue(num_channels_); }
+  static uint8_t& output_channel() { return ParameterValue(output_channel_); }
 
   DISALLOW_COPY_AND_ASSIGN(Combiner);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_COMBINER_H_

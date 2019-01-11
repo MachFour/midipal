@@ -22,13 +22,29 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-const uint8_t kNumDrumParts = 4;
 
 class DrumPatternGenerator {
  public:
-  DrumPatternGenerator() { }
+  static constexpr uint8_t kNumDrumParts = 4;
+
+  enum Parameter : uint8_t {
+    mode_,
+    clk_mode_,
+    bpm_,
+    groove_template_,
+    groove_amount_,
+    channel_,
+    part_instrument_,
+    part_instrument_last = part_instrument_ + kNumDrumParts, /* last index */
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -46,23 +62,34 @@ class DrumPatternGenerator {
 
   static void SetParameter(uint8_t key, uint8_t value);
   
-  static const AppInfo app_info_ PROGMEM;
-  
+
  private:
   static void Reset();
   static void Tick();
   static void AllNotesOff();
   static void TriggerNote(uint8_t part);
-  
+
+  static uint8_t partForOctave(uint8_t octave);
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
   static uint8_t running_;
    
-  static uint8_t mode_;
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  static uint8_t channel_;
-  static uint8_t part_instrument_[kNumDrumParts];
+  static inline uint8_t& mode() { return ParameterValue(mode_); }
+  static inline uint8_t& clk_mode() { return ParameterValue(clk_mode_); }
+  static inline uint8_t& bpm() { return ParameterValue(bpm_); }
+  static inline uint8_t& groove_template() { return ParameterValue(groove_template_); }
+  static inline uint8_t& groove_amount() { return ParameterValue(groove_amount_); }
+  static inline uint8_t& channel() { return ParameterValue(channel_); }
+  static inline uint8_t part_instrument(uint8_t num) {
+    if (num >= kNumDrumParts) {
+      // poor man's bounds checking
+      num = 0;
+    }
+    return settings[part_instrument_ + num];
+  }
   
   static uint8_t tick_;
   static uint8_t idle_ticks_;
@@ -81,6 +108,7 @@ class DrumPatternGenerator {
   DISALLOW_COPY_AND_ASSIGN(DrumPatternGenerator);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_DRUM_PATTERN_GENERATOR_H_

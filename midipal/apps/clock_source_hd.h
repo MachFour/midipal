@@ -21,11 +21,25 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class ClockSourceHD {
  public:
-  ClockSourceHD() { }
+
+  enum Parameter : uint8_t {
+    running_,
+    bpm_,
+    bpm_10th_,
+    groove_template_,
+    groove_amount_,
+    tap_bpm_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnStart();
@@ -35,30 +49,44 @@ class ClockSourceHD {
   static uint8_t OnRedraw();
   
   static void SetParameter(uint8_t key, uint8_t value);
-  static uint8_t GetParameter(uint8_t key);
   static uint8_t OnClick();
   static uint8_t OnIncrement(int8_t increment);
   static void OnClock(uint8_t clock_source);
   
-  static const AppInfo app_info_ PROGMEM;
-  
  private:
   static void Stop();
   static void Start();
-  
-  static uint8_t running_;
-  static uint8_t bpm_;
-  static uint8_t bpm_10th_;
-  
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
+  static uint8_t& running() {
+    return ParameterValue(running_);
+  }
+  static uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static uint8_t& bpm_10th() {
+    return ParameterValue(bpm_10th_);
+  }
+  static uint8_t& groove_template() {
+    return ParameterValue(groove_template_);
+  }
+  static uint8_t& groove_amount() {
+    return ParameterValue(groove_amount_);
+  }
+  static uint8_t& tap_bpm() {
+    return ParameterValue(tap_bpm_);
+  }
+
   static uint8_t num_taps_;
   static uint32_t elapsed_time_;
   
   DISALLOW_COPY_AND_ASSIGN(ClockSourceHD);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_CLOCK_SOURCE_H_

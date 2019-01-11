@@ -22,15 +22,35 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps {
   
-static const uint8_t kPSNumTracks = 6;
-static const uint8_t kPSNumSteps = 128;
-
 
 class PolySequencer {
+  static const uint8_t kNumTracks = 6;
+  static const uint8_t kNumSteps = 128;
+
  public:
-  PolySequencer() { }
+  enum Parameter : uint16_t {
+    running_,
+    recording_,
+    overdubbing_,
+    clk_mode_,
+    bpm_,
+    groove_template_,
+    groove_amount_,
+    clock_division_,
+    channel_,
+    num_steps_,
+    sequence_data_,
+    /* last byte */
+    sequence_data_end_ = sequence_data_ + kNumSteps * kNumTracks - 1,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -51,27 +71,51 @@ class PolySequencer {
   static uint8_t OnRedraw();
 
   static void SetParameter(uint8_t key, uint8_t value);
-  
-  static const AppInfo app_info_ PROGMEM;
-  
+
  private:
   // Record a note (midi note#) ; 0xfe for tie ; 0xff for rest.
   static void Record(uint8_t note);
   static void Stop();
   static void Start();
   static void Tick();
-  
-  static uint8_t running_;
-  static uint8_t recording_;
-  static uint8_t overdubbing_;
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  static uint8_t clock_division_;  
-  static uint8_t channel_;
-  static uint8_t num_steps_;
-  static uint8_t sequence_data_[kPSNumSteps * kPSNumTracks];
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& running() {
+    return ParameterValue(running_);
+  }
+  static inline uint8_t& recording() {
+    return ParameterValue(recording_);
+  }
+  static inline uint8_t& overdubbing() {
+    return ParameterValue(overdubbing_);
+  }
+  static inline uint8_t& clk_mode() {
+    return ParameterValue(clk_mode_);
+  }
+  static inline uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static inline uint8_t& groove_template() {
+    return ParameterValue(groove_template_);
+  }
+  static inline uint8_t& groove_amount() {
+    return ParameterValue(groove_amount_);
+  }
+  static inline uint8_t& clock_division() {
+    return ParameterValue(clock_division_);
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& num_steps() {
+    return ParameterValue(num_steps_);
+  }
+
+  static inline uint8_t* sequence_data() {
+    return &settings[sequence_data_];
+  }
   
   static uint8_t midi_clock_prescaler_;
   static uint8_t tick_;
@@ -81,12 +125,13 @@ class PolySequencer {
   static uint8_t last_note_;
   static uint8_t previous_rec_note_;
   static uint8_t rec_mode_menu_option_;
-  static uint8_t pending_notes_[kPSNumTracks];
-  static uint8_t pending_notes_transposed_[kPSNumTracks];
+  static uint8_t pending_notes_[kNumTracks];
+  static uint8_t pending_notes_transposed_[kNumTracks];
   
   DISALLOW_COPY_AND_ASSIGN(PolySequencer);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_POLY_SEQUENCER_H_

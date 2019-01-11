@@ -22,11 +22,25 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class ScaleProcessor {
  public:
-  ScaleProcessor() { }
+
+  enum Parameter : uint8_t {
+    channel_,
+    root_,
+    scale_,
+    original_,
+    voice_1_,
+    voice_2_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -38,29 +52,45 @@ class ScaleProcessor {
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity);
 
-  static const AppInfo app_info_ PROGMEM;
 
  protected:
   static void ProcessNoteMessage(
       uint8_t message,
       uint8_t note,
       uint8_t velocity);
-   
-  static uint8_t channel_;
-  static uint8_t root_;
-  static uint8_t scale_;
-  static uint8_t original_;
-  static uint8_t voice_1_;
-  static uint8_t voice_2_;
-  
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& root() {
+    return ParameterValue(root_);
+  }
+  static inline uint8_t& scale() {
+    return ParameterValue(scale_);
+  }
+  static inline uint8_t& original() {
+    return ParameterValue(original_);
+  }
+  static inline uint8_t& voice_1() {
+    return ParameterValue(voice_1_);
+  }
+  static inline uint8_t& voice_2() {
+    return ParameterValue(voice_2_);
+  }
+
   static uint8_t lowest_note_;
   static uint8_t previous_note_;
   static uint8_t voice_2_note_;
-  static uint8_t flip_;
+  static bool flip_;
 
   DISALLOW_COPY_AND_ASSIGN(ScaleProcessor);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif  // MIDIPAL_APPS_SCALE_PROCESSOR_H_

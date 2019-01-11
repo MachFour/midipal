@@ -25,9 +25,13 @@
 #include "midipal/display.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 using namespace avrlib;
+
+// it's empty, but we'll keep it here
+//uint8_t* BpmMeter::settings[Parameter::COUNT];
 
 /* static */
 uint32_t BpmMeter::num_ticks_;
@@ -44,58 +48,58 @@ uint8_t BpmMeter::refresh_bpm_;
 /* static */
 const AppInfo BpmMeter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
   &OnClock, // void (*OnClock)();
   &OnStart, // void (*OnStart)();
   &OnContinue, // void (*OnContinue)();
   &OnStop, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
+  nullptr, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  NULL, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
   &OnIncrement, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
   &OnRedraw, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  0, // settings_size
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   0, // settings_offset
-  NULL, // settings_data
-  0, // factory_data
+  settings, // settings_data
+  nullptr, // factory_data
   STR_RES_BPM_CNTR, // app_name
   true
 };
 
 /* static */
 void BpmMeter::OnInit() {
-  clock.Update(31250, 0, 0);
+  Clock::Update(31250, 0, 0);
   active_page_ = 0;
   refresh_bpm_ = 1;
-  ui.RefreshScreen();
+  Ui::RefreshScreen();
 }
 
 /* static */
 void BpmMeter::Reset() {
   num_ticks_ = 0;
   clock_ = 0;
-  clock.Reset();
+  Clock::Reset();
 }
 
 /* static */
 void BpmMeter::OnClock(uint8_t clock_mode) {
   if (clock_mode == CLOCK_MODE_EXTERNAL) {
     if (num_ticks_ == 0) {
-      clock.Reset();
+      Clock::Reset();
     }
-    clock_ = clock.value();
+    clock_ = Clock::value();
     ++num_ticks_;
   }
 }
@@ -117,7 +121,7 @@ void BpmMeter::OnContinue() {
 
 /* static */
 void BpmMeter::OnRawByte(uint8_t byte) {
-  app.SendNow(byte);
+  App::SendNow(byte);
   if (byte == 0xff) {
     Reset();
   }
@@ -133,8 +137,8 @@ void BpmMeter::PrintBpm() {
   }
   uint32_t den = clock_;
   while (num_ticks > 550) {
-    num_ticks >>= 1;
-    den >>= 1;
+    num_ticks = num_ticks/2;
+    den = den/2;
   }
   uint32_t num = 7812500 * num_ticks;
   if (den == 0) {
@@ -143,7 +147,7 @@ void BpmMeter::PrintBpm() {
   }
   UnsafeItoa(num / den, 6, &line_buffer[2]);
   AlignRight(&line_buffer[2], 6);
-  // A dirty hack to get the decimal display.
+  // A dirty hack to get the decimal Display.
   if (line_buffer[6] == ' ') {
     line_buffer[6] = '0';
   }
@@ -158,18 +162,17 @@ uint8_t BpmMeter::OnRedraw() {
   if (active_page_ < 2) {
     if (refresh_bpm_ || active_page_ == 1) {
       PrintBpm();
-      ui.RefreshScreen();
+      Ui::RefreshScreen();
       if (active_page_ == 0) {
         Reset();
       }
     }
-    refresh_bpm_ = \
-        (active_page_ == 0 && clock.value() > 30000 && num_ticks_ > 48);
+    refresh_bpm_ = U8(active_page_ == 0 && Clock::value() > 30000 && num_ticks_ > 48);
   } else {
     line_buffer[0] = 't';
     UnsafeItoa(num_ticks_, 7, &line_buffer[1]);
     AlignRight(&line_buffer[1], 7);
-    ui.RefreshScreen();
+    Ui::RefreshScreen();
   }
   return 1;
 }
@@ -185,7 +188,7 @@ uint8_t BpmMeter::OnIncrement(int8_t increment) {
     }
   }
   refresh_bpm_ = 1;
-  ui.RefreshScreen();
+  Ui::RefreshScreen();
   return 1;
 }
 
@@ -195,4 +198,5 @@ uint8_t BpmMeter::OnClick() {
   return 1;
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

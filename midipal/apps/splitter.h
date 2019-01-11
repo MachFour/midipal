@@ -22,11 +22,22 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Splitter {
  public:
-  Splitter() { }
+  enum Parameter : uint8_t {
+    input_channel_,
+    split_point_,
+    lower_channel_,
+    upper_channel_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -34,18 +45,28 @@ class Splitter {
      uint8_t* data,
      uint8_t data_size,
      uint8_t accepted_channel);
- 
-  static const AppInfo app_info_ PROGMEM;
- 
+
  private:
-  static uint8_t input_channel_;
-  static uint8_t split_point_;
-  static uint8_t lower_channel_;
-  static uint8_t upper_channel_;
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& input_channel() {
+    return ParameterValue(input_channel_);
+  }
+  static inline uint8_t& split_point() {
+    return ParameterValue(split_point_);
+  }
+  static inline uint8_t& lower_channel() {
+    return ParameterValue(lower_channel_);
+  }
+  static inline uint8_t& upper_channel() {
+    return ParameterValue(upper_channel_);
+  }
   
   DISALLOW_COPY_AND_ASSIGN(Splitter);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_SPLITTER_H_

@@ -21,17 +21,15 @@
 
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-const uint8_t clock_divider_factory_data[2] PROGMEM = {
+static const uint8_t clock_divider_factory_data[ClockDivider::Parameter::COUNT] PROGMEM = {
   1, 0,
 };
 
 /* static */
-uint8_t ClockDivider::divider_;
-
-/* static */
-uint8_t ClockDivider::start_delay_;
+uint8_t ClockDivider::settings[Parameter::COUNT];
 
 /* static */
 uint8_t ClockDivider::counter_;
@@ -46,31 +44,31 @@ bool ClockDivider::running_;
 /* static */
 const AppInfo ClockDivider::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
-  NULL, // void (*OnClock)();
-  NULL, // void (*OnStart)();
-  NULL, // void (*OnContinue)();
-  NULL, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnClock)();
+  nullptr, // void (*OnStart)();
+  nullptr, // void (*OnContinue)();
+  nullptr, // void (*OnStop)();
+  nullptr, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  NULL, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
-  NULL, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
-  NULL, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  2, // settings_size
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // uint8_t (*OnClick)();
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnRedraw)();
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_CLOCK_DIVIDER, // settings_offset
-  &divider_, // settings_data
+  settings, // settings_data
   clock_divider_factory_data, // factory_data
   STR_RES_DIVIDER, // app_name
   true
@@ -78,8 +76,8 @@ const AppInfo ClockDivider::app_info_ PROGMEM = {
   
 /* static */
 void ClockDivider::OnInit() {
-  ui.AddPage(STR_RES_DIV, UNIT_INTEGER, 1, 32);
-  ui.AddPage(STR_RES_DELAY, UNIT_INTEGER, 0, 96);
+  Ui::AddPage(STR_RES_DIV, UNIT_INTEGER, 1, 32);
+  Ui::AddPage(STR_RES_DELAY, UNIT_INTEGER, 0, 96);
   counter_ = 0;
   start_delay_counter_ = 0;
   running_ = false;
@@ -92,31 +90,32 @@ void ClockDivider::OnRawByte(uint8_t byte) {
     if (start_delay_counter_) {
       --start_delay_counter_;
       if (!start_delay_counter_) {
-        app.SendNow(0xfa);
+        App::SendNow(0xfa);
         running_ = true;
       }
     }
     // Process clock message and divide it.
     if (running_) {
       ++counter_;
-      if (counter_ >= divider_) {
-        app.SendNow(0xf8);
+      if (counter_ >= divider()) {
+        App::SendNow(0xf8);
         counter_ = 0;
       }
     }
   } else if (byte == 0xfa) {
-    counter_ = divider_ - 1;
-    start_delay_counter_ = start_delay_;
+    counter_ = divider() - 1_u8;
+    start_delay_counter_ = start_delay();
     if (!start_delay_counter_) {
-      app.SendNow(0xfa);
+      App::SendNow(0xfa);
       running_ = true;
     }
   } else {
     if (byte == 0xfc) {
       running_ = false;
     }
-    app.SendNow(byte);
+    App::SendNow(byte);
   }
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

@@ -22,13 +22,22 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 static const uint8_t kMaxChordNotes = 10;
 
 class ChordMemory {
  public:
-  ChordMemory() { }
+  enum Parameter : uint8_t {
+    channel_,
+    num_notes_,
+    chord_data_,
+    chord_data_end_ = chord_data_ + kMaxChordNotes,
+    COUNT = chord_data_end_
+  };
+
+  static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
   static void OnRawMidiData(
@@ -49,15 +58,29 @@ class ChordMemory {
       uint8_t channel,
       uint8_t note,
       uint8_t velocity);
-  
-  static uint8_t channel_;
-  static uint8_t num_notes_;
-  static uint8_t chord_[kMaxChordNotes];
-  static uint8_t root_;
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& num_notes() {
+    return ParameterValue(num_notes_);
+  }
+  static inline uint8_t* chord_data() {
+      return &settings[chord_data_];
+  }
+
+  // whether the given channel matches the currently set one
+  static inline bool isActiveChannel(uint8_t channel);
+
+  //static uint8_t root_;
   
   DISALLOW_COPY_AND_ASSIGN(ChordMemory);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_CHORD_MEMORY_H_

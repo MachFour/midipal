@@ -67,7 +67,7 @@ class NoteMap {
         return &map_[i];
       }
     }
-    return NULL;
+    return nullptr;
   }
 
  private:

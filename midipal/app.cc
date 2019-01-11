@@ -63,37 +63,29 @@ namespace midipal {
 const uint8_t midi_clock_tick_per_step[17] PROGMEM = {
   192, 144, 96, 72, 64, 48, 36, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
 };
-  
+
 using namespace avrlib;
 
-Serial<MidiPort, 31250, DISABLED, POLLED> midi_out;
+using MidiOut = Serial<MidiPort, 31250, DISABLED, POLLED>;
 
 /* static */
 AppInfo App::app_info_;
 
+static const AppInfo* registry[] = {
 #ifdef POLY_SEQUENCER_FIRMWARE
-
-const App::AppInfo* App::registry[] = {
   &apps::AppSelector::app_info_,
   &apps::Monitor::app_info_,
   &apps::PolySequencer::app_info_,
   &apps::ClockSource::app_info_,
   &apps::SyncLatch::app_info_,
-};
-
-#else
-
-const AppInfo* App::registry[] = {
+#else  // no POLY_SEQUENCER_FIRMWARE
   &apps::AppSelector::app_info_,
-
   &apps::Monitor::app_info_,
   &apps::BpmMeter::app_info_,
-
   &apps::Filter::app_info_,
   &apps::Splitter::app_info_,
   &apps::Dispatcher::app_info_,
   &apps::Combiner::app_info_,
-
   &apps::ClockDivider::app_info_,
   &apps::SyncLatch::app_info_,
 #ifdef USE_HD_CLOCK
@@ -101,9 +93,7 @@ const AppInfo* App::registry[] = {
 #else
   &apps::ClockSource::app_info_,
 #endif  // USE_HD_CLOCK
-
   &apps::CcKnob::app_info_,
-
   &apps::DrumPatternGenerator::app_info_,
   &apps::Randomizer::app_info_,
   &apps::ChordMemory::app_info_,
@@ -116,14 +106,16 @@ const AppInfo* App::registry[] = {
   &apps::Sequencer::app_info_,
 #endif  // USE_SH_SEQUENCER
   &apps::Lfo::app_info_,
-
   &apps::Tanpura::app_info_,
-
   &apps::GenericFilter::app_info_,
   &apps::Settings::app_info_
+#endif  // POLY_SEQUENCER_FIRMWARE
 };
 
-#endif  // POLY_SEQUENCER_FIRMWARE
+/* static */
+uint8_t App::num_apps() {
+  return sizeof(registry)/sizeof(AppInfo*);
+}
 
 /* static */
 void App::Init() {
@@ -135,25 +127,19 @@ void App::Init() {
 
 /* static */
 void App::SaveSettings() {
-  eeprom_write_block(
-      settings_data(),
-      (void*)(settings_offset()),
-      settings_size());
+  eeprom_write_block(settings_data(), reinterpret_cast<void*>(settings_offset()), settings_size());
 }
 
 /* static */
 void App::LoadSettings() {
-  eeprom_read_block(
-      settings_data(),
-      (void*)(settings_offset()),
-      settings_size());
+  eeprom_read_block(settings_data(), reinterpret_cast<void*>(settings_offset()), settings_size());
 }
 
 /* static */
-void App::SaveSetting(uint16_t index) {
-  eeprom_write_byte(
-      (uint8_t*)(settings_offset()) + index,
-      settings_data()[index]);
+void App::SaveSetting(uint16_t key) {
+  auto parameter_address = reinterpret_cast<uint8_t*>(settings_offset()) + key;
+  // can't use getParameter as it only takes uint8_t offset
+  eeprom_write_byte(parameter_address, *(settings_data() + key));
 }
 
 /* static */
@@ -168,14 +154,9 @@ void App::Launch(uint8_t app_index) {
 }
 
 /* static */
-void App::SaveSettingWord(uint16_t setting_id, uint16_t value) {
-  eeprom_write_word((uint16_t*)(setting_id), value);
-}
-
-/* static */
 void App::SendNow(uint8_t byte) {
   LedOut::High();
-  midi_out.Write(byte);
+  MidiOut::Write(byte);
 }
 
 /* static */
@@ -203,8 +184,9 @@ void App::Send(uint8_t status, uint8_t* data, uint8_t size) {
 /* static */
 void App::FlushOutputBuffer(uint8_t requested_size) {
   while (MidiHandler::OutputBuffer::writable() < requested_size) {
-    display.set_status('!');
-    midi_out.Write(MidiHandler::OutputBuffer::Read());
+    Display::set_status('!');
+    // XXX apparently a bug?
+    //midi_out.Write(MidiHandler::OutputBuffer::Read());
   }
 }
 
@@ -223,9 +205,9 @@ void App::SendScheduledNotes(uint8_t channel) {
     }
     if (entry.note != kZombieSlot) {
       if (entry.velocity == 0) {
-        Send3(0x80 | channel, entry.note, 0);
+        Send3(byteOr(channel, 0x80), entry.note, 0);
       } else {
-        Send3(0x90 | channel, entry.note, entry.velocity);
+        Send3(byteOr(channel, 0x90), entry.note, entry.velocity);
       }
     }
     current = entry.next;
@@ -240,27 +222,18 @@ void App::FlushQueue(uint8_t channel) {
   }
 }
 
-/* static */
-uint8_t App::num_apps() {
-  return sizeof(registry) / sizeof(AppInfo*);
-}
 
 /* static */
-void App::RemoteControl(
-    uint8_t channel,
-    uint8_t controller,
-    uint8_t value) {
+void App::RemoteControl(uint8_t channel, uint8_t cc_num, uint8_t value) {
   uint8_t remote_control_channel = apps::Settings::remote_control_channel();
-  if (remote_control_channel &&
-      controller >= 80 &&
-      remote_control_channel == channel + 1 &&
-      controller < settings_size() + 80) {
-    controller -= 80;
-    PageDefinition page = ui.page_definition(controller);
-    uint8_t range = page.max - page.min + 1;
-    uint8_t scaled_value = U8U8MulShift8(range, value << 1);
+  if (remote_control_channel == channel + 1 // (remote_control_channel is 1-indexed)
+     && cc_num >= 80 && cc_num < num_parameters() + 80) {
+    cc_num -= 80;
+    PageDefinition page = Ui::page_definition(cc_num);
+    uint8_t range = page.max - page.min + 1_u8;
+    uint8_t scaled_value = U8U8MulShift8(range, value << 1u);
     scaled_value += page.min;
-    SetParameter(controller, scaled_value);
+    SetParameter(cc_num, scaled_value);
   }
 }
 
@@ -270,7 +243,7 @@ bool App::NoteClock(bool on, uint8_t channel, uint8_t note) {
   uint8_t note_clock_note = apps::Settings::note_clock_note();
   if (channel + 1 == note_clock_channel && note == note_clock_note) {
     if (on) {
-      uint8_t steps = ResourcesManager::Lookup<uint8_t, uint8_t>(
+      auto steps = ResourcesManager::Lookup<uint8_t, uint8_t>(
           midi_clock_tick_per_step,
           apps::Settings::note_clock_ticks());
       OnStart();
@@ -282,8 +255,5 @@ bool App::NoteClock(bool on, uint8_t channel, uint8_t note) {
   }
   return false;
 }
-
-/* extern */
-App app;
 
 }  // namespace midipal

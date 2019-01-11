@@ -22,11 +22,26 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Tanpura {
  public:
-  Tanpura() { }
+  enum Parameter : uint8_t {
+    running_,
+    clk_mode_,
+    bpm_,
+    clock_division_,
+    channel_,
+    root_,
+    pattern_,
+    shift_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -42,22 +57,40 @@ class Tanpura {
   
   static void SetParameter(uint8_t key, uint8_t value);
   
-  static const AppInfo app_info_ PROGMEM;
-  
+
  private:
   static void Stop();
   static void Start();
   static void Tick();
-  
-  static uint8_t running_;
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t clock_division_;  
-  static uint8_t channel_;
-  static uint8_t root_;
-  static uint8_t pattern_;
-  static uint8_t shift_;
-  
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& running() {
+    return ParameterValue(running_);
+  }
+  static inline uint8_t& clk_mode() {
+    return ParameterValue(clk_mode_);
+  }
+  static inline uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static inline uint8_t& clock_division() {
+    return ParameterValue(clock_division_);
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& root() {
+    return ParameterValue(root_);
+  }
+  static inline uint8_t& pattern() {
+    return ParameterValue(pattern_);
+  }
+  static inline uint8_t& shift() {
+    return ParameterValue(shift_);
+  }
+
   static uint8_t midi_clock_prescaler_;
   static uint8_t tick_;
   static uint8_t step_;
@@ -65,6 +98,7 @@ class Tanpura {
   DISALLOW_COPY_AND_ASSIGN(Tanpura);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_TANPURA_H_

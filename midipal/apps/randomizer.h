@@ -23,11 +23,27 @@
 #include "midipal/app.h"
 #include "midipal/note_map.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps {
 
 class Randomizer {
- public:
-  Randomizer() { }
+public:
+
+  enum Parameter : uint8_t {
+    channel_,
+    global_amount_,
+    note_amount_,
+    velocity_amount_,
+    cc_amount_0,
+    cc_amount_1,
+    cc_0,
+    cc_1,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -39,26 +55,44 @@ class Randomizer {
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity);
   
-  static const AppInfo app_info_ PROGMEM;
-  
- private:
+
+private:
   static void SendMessage(
       uint8_t message,
       uint8_t channel,
       uint8_t note,
       uint8_t velocity);
+
   static uint8_t ScaleModulationAmount(uint8_t amount);
-  
-  static uint8_t channel_;
-  static uint8_t global_amount_;
-  static uint8_t note_amount_;
-  static uint8_t velocity_amount_;
-  static uint8_t cc_amount_[2];
-  static uint8_t cc_[2];
-  
+
+  static bool isActiveChannel(uint8_t channel);
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& global_amount() {
+    return ParameterValue(global_amount_);
+  }
+  static inline uint8_t& note_amount() {
+    return ParameterValue(note_amount_);
+  }
+  static inline uint8_t& velocity_amount() {
+    return ParameterValue(velocity_amount_);
+  }
+  static inline uint8_t* cc_amount() {
+    return &settings[cc_amount_0];
+  }
+  static inline uint8_t* cc() {
+    return &settings[cc_0];
+  }
+
   DISALLOW_COPY_AND_ASSIGN(Randomizer);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_RANDOMIZER_H_

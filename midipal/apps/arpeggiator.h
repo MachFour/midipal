@@ -22,11 +22,28 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Arpeggiator {
  public:
-  Arpeggiator() { }
+  enum Parameter : uint8_t {
+    clk_mode_,
+    bpm_,
+    groove_template_,
+    groove_amount_,
+    channel_,
+    direction_,
+    num_octaves_,
+    pattern_,
+    pattern_length_,
+    clock_division_,
+    duration_,
+    latch_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
   static void OnRawMidiData(
@@ -55,19 +72,61 @@ class Arpeggiator {
   static void SendNote(uint8_t note, uint8_t velocity);
   
   static uint8_t running_;
-   
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  static uint8_t channel_;
-  static uint8_t direction_;
-  static uint8_t num_octaves_;
-  static uint8_t pattern_;
-  static uint8_t pattern_length_;
-  static uint8_t clock_division_;
-  static uint8_t duration_;
-  static uint8_t latch_;
+
+private:
+
+  enum ArpDirection : uint8_t {
+    ARPEGGIO_DIRECTION_UP,
+    ARPEGGIO_DIRECTION_DOWN,
+    ARPEGGIO_DIRECTION_UP_DOWN,
+    ARPEGGIO_DIRECTION_RANDOM,
+    ARPEGGIO_DIRECTION_AS_PLAYED,
+    ARPEGGIO_DIRECTION_CHORD
+  };
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& clk_mode() {
+    return ParameterValue(clk_mode_);
+  }
+  static inline uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static inline uint8_t& groove_template() {
+    return ParameterValue(groove_template_);
+  }
+  static inline uint8_t& groove_amount() {
+    return ParameterValue(groove_amount_);
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& direction() {
+    return ParameterValue(direction_);
+  }
+  static inline ArpDirection directionEnum() {
+    return static_cast<ArpDirection>(direction());
+  }
+
+  static inline uint8_t& num_octaves() {
+    return ParameterValue(num_octaves_);
+  }
+  static inline uint8_t& pattern() {
+    return ParameterValue(pattern_);
+  }
+  static inline uint8_t& pattern_length() {
+    return ParameterValue(pattern_length_);
+  }
+  static inline uint8_t& clock_division() {
+    return ParameterValue(clock_division_);
+  }
+  static inline uint8_t& duration() {
+    return ParameterValue(duration_);
+  }
+  static inline uint8_t& latch() {
+    return ParameterValue(latch_);
+  }
   
   static uint8_t midi_clock_prescaler_;
   
@@ -84,6 +143,7 @@ class Arpeggiator {
   DISALLOW_COPY_AND_ASSIGN(Arpeggiator);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_ARPEGGIATOR_H_

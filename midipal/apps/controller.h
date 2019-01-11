@@ -22,11 +22,23 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Controller {
  public:
-  Controller() { }
+  static constexpr int kCCDataSize = 8;
+
+  enum Parameter : uint8_t {
+    channel_,
+    cc_data_,
+    cc_data_last_ = cc_data_ + kCCDataSize - 1, /* the last index */
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -37,15 +49,24 @@ class Controller {
 
   static uint8_t OnPot(uint8_t pot, uint8_t value);
 
-  static const AppInfo app_info_ PROGMEM;
-
  private:
-  static uint8_t channel_;
-  static uint8_t cc_[8];
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
+  static uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+
+  static uint8_t* cc_data() {
+    return &settings[cc_data_];
+  }
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_CONTROLLER_H_

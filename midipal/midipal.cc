@@ -35,16 +35,26 @@ using namespace midi;
 using namespace midipal;
 
 // Midi input.
-Serial<MidiPort, 31250, POLLED, POLLED> midi_io;
+using MidiIo = Serial<MidiPort, 31250, POLLED, POLLED>;
 MidiStreamParser<MidiHandler> midi_parser;
 
 volatile uint8_t num_clock_ticks = 0;
 
+inline int freeRam() {
+  extern int __heap_start, *__brkval;
+  uint8_t v;
+  if (__brkval /* > 0 */) {
+    return (int)(&v) - (int)__brkval;
+  } else {
+    return (int)(&v) - (int)&__heap_start;
+  }
+}
+
 ISR(TIMER2_OVF_vect, ISR_NOBLOCK) {
   static uint8_t sub_clock;
 
-  if (midi_io.readable()) {
-    uint8_t byte = midi_io.ImmediateRead();
+  if (MidiIo::readable()) {
+    uint8_t byte = MidiIo::ImmediateRead();
     if (byte != 0xfe || !apps::Settings::filter_active_sensing()) {
       LedIn::High();
       midi_parser.PushByte(byte);
@@ -52,21 +62,26 @@ ISR(TIMER2_OVF_vect, ISR_NOBLOCK) {
   }
   
   // 4kHz
-  if (MidiHandler::OutputBuffer::readable() && midi_io.writable()) {
+  if (MidiHandler::OutputBuffer::readable() && MidiIo::writable()) {
     LedOut::High();
-    midi_io.Overwrite(MidiHandler::OutputBuffer::ImmediateRead());
+    MidiIo::Overwrite(MidiHandler::OutputBuffer::ImmediateRead());
   }
   
   while (num_clock_ticks) {
     --num_clock_ticks;
-    app.OnClock(CLOCK_MODE_INTERNAL);
+    App::OnClock(CLOCK_MODE_INTERNAL);
+  }
+
+  if (freeRam() <= 10) {
+    LedIn::High();
+    LedOut::High();
   }
   
-  sub_clock = (sub_clock + 1) & 3;
-  if ((sub_clock & 1) == 0) {
+  sub_clock = byteAnd(sub_clock + 1, 3);
+  if (byteAnd(sub_clock, 1) == 0) {
     // 2kHz
-    ui.Poll();
-    if ((sub_clock & 3) == 0) {
+    Ui::Poll();
+    if (byteAnd(sub_clock, 3) == 0) {
       TickSystemClock();
       LedOut::Low();
       LedIn::Low();
@@ -74,11 +89,11 @@ ISR(TIMER2_OVF_vect, ISR_NOBLOCK) {
   }
 }
 
-ISR(TIMER1_COMPA_vect) {
-  PwmChannel1A::set_frequency(clock.Tick());
-  if (clock.running()) {
-    if (app.realtime_clock_handling()) {
-      app.OnClock(CLOCK_MODE_INTERNAL);
+ISR(TIMER1_COMPA_vect, ISR_BLOCK) {
+  PwmChannel1A::set_frequency(Clock::Tick());
+  if (Clock::running()) {
+    if (App::realtime_clock_handling()) {
+      App::OnClock(CLOCK_MODE_INTERNAL);
     } else {
       ++num_clock_ticks;
     }
@@ -96,42 +111,42 @@ void Init() {
   event_scheduler.Init();
   
   // Boot the settings app.
-  app.Launch(app.num_apps() - 1);
-  app.LoadSettings();
+  App::Launch(App::num_apps() - 1_u8);
+  App::LoadSettings();
   
   // Boot the app selector app.
-  app.Launch(0);
-  app.Init();
+  App::Launch(0);
+  App::Init();
 
   // Now that the app selector app has booted, we can retrieve the
   // app to launch.
-  uint8_t launch_app = app.GetParameter(0);
-  if (launch_app >= app.num_apps()) {
+  auto launch_app = App::GetParameter(0);
+  if (launch_app >= App::num_apps()) {
     launch_app = 0;
-    app.SetParameter(0, launch_app);
+    App::SetParameter(0, launch_app);
   }
-  app.Launch(launch_app);
+  App::Launch(launch_app);
   
-  ui.Init();
-  clock.Init();
+  Ui::Init();
+  Clock::Init();
   
   // Configure the timers.
   Timer<1>::set_prescaler(1);
-  Timer<1>::set_mode(0, _BV(WGM12), 3);
+  Timer<1>::set_mode(0, bitFlag(WGM12), 3);
   PwmChannel1A::set_frequency(6510);
   Timer<1>::StartCompare();
   
   Timer<2>::set_prescaler(2);
   Timer<2>::set_mode(TIMER_PWM_PHASE_CORRECT);
   Timer<2>::Start();
-  app.Init();
-  midi_io.Init();
+  App::Init();
+  MidiIo::Init();
 }
 
-int main(void) {
+int main() {
   ResetWatchdog();
   Init();
-  while (1) {
-    ui.DoEvents();
+  while (true) {
+    Ui::DoEvents();
   }
 }

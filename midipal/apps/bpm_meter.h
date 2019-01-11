@@ -22,11 +22,18 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps {
 
 class BpmMeter {
  public:
-  BpmMeter() { }
+  // there are no parameters
+  enum Parameter : uint8_t {
+    COUNT
+  };
+
+  // can't have zero sized arrays
+  static constexpr uint8_t* settings = nullptr; // [Parameter::COUNT];
 
   static void OnInit();
 
@@ -54,6 +61,7 @@ class BpmMeter {
   DISALLOW_COPY_AND_ASSIGN(BpmMeter);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_MONITOR_H_

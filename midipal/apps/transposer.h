@@ -22,11 +22,20 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Transposer {
- public:
-  Transposer() { }
+public:
+  enum Parameter : uint8_t {
+    channel_,
+    transposition_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -38,15 +47,25 @@ class Transposer {
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity);
 
-  static const AppInfo app_info_ PROGMEM;
+private:
+  static bool isActiveChannel(uint8_t channel);
+  static uint8_t transposedNote(uint8_t note);
 
- protected:
-  static uint8_t channel_;
-  static int8_t transposition_;
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
+  static uint8_t& channel() {
+    return ParameterValue(channel_);
+  };
+  static int8_t& transposition() {
+    return reinterpret_cast<int8_t&>(ParameterValue(transposition_));
+  };
   
   DISALLOW_COPY_AND_ASSIGN(Transposer);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif  // MIDIPAL_APPS_TRANSPOSER_H_

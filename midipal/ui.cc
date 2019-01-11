@@ -40,7 +40,7 @@ uint8_t Ui::num_pages_;
 uint8_t Ui::page_;
 uint8_t Ui::stride_;
 uint8_t Ui::pot_value_[8];
-uint8_t Ui::editing_;
+bool Ui::editing_;
 uint8_t Ui::read_pots_;
 uint16_t Ui::encoder_hold_time_;
 /* </static> */
@@ -52,14 +52,14 @@ Ui ui;
 void Ui::Init() {
   encoder_.Init();
   pots_.Init();
-  lcd.Init();
-  display.Init();
+  Lcd::Init();
+  Display::Init();
   read_pots_ = 0;
   num_declared_pages_ = 0;
   num_pages_ = 0;
   stride_ = 0;
   page_ = 0;
-  editing_ = 0;
+  editing_ = false;
   encoder_hold_time_ = 0;
 }
 
@@ -79,10 +79,10 @@ void Ui::AddPage(
 
 /* static */
 void Ui::AddClockPages() {
-  ui.AddPage(STR_RES_CLK, STR_RES_INT, 0, 2);
-  ui.AddPage(STR_RES_BPM, UNIT_INTEGER, 40, 240);
-  ui.AddPage(STR_RES_GRV, STR_RES_SWG, 0, 5);
-  ui.AddPage(STR_RES_AMT, UNIT_INTEGER, 0, 127);
+  Ui::AddPage(STR_RES_CLK, STR_RES_INT, 0, 2);
+  Ui::AddPage(STR_RES_BPM, UNIT_INTEGER, 40, 240);
+  Ui::AddPage(STR_RES_GRV, STR_RES_SWG, 0, 5);
+  Ui::AddPage(STR_RES_AMT, UNIT_INTEGER, 0, 127);
 }
 
 /* static */
@@ -126,7 +126,7 @@ void Ui::Poll() {
       queue_.AddEvent(CONTROL_POT, index, value);
     }
   }
-  lcd.Tick();
+  Lcd::Tick();
 }
 
 /* static */
@@ -156,21 +156,21 @@ void Ui::DoEvents() {
     Event e = queue_.PullEvent();
     if (e.control_type == CONTROL_ENCODER) {
       // Internal handling of the encoder.
-      if (!app.OnIncrement(e.value)) {
+      if (!App::OnIncrement(e.value)) {
         if (editing_) {
-          auto increment = static_cast<int8_t>(e.value);
+          auto increment = S8(e.value);
           if (page_def.value_res_id == UNIT_SIGNED_INTEGER) {
-            auto old_val = static_cast<int8_t>(app.GetParameter(page_));
-            auto min = static_cast<int8_t>(page_def.min);
-            auto max = static_cast<int8_t>(page_def.max);
-            auto new_val = static_cast<int8_t>(Clip(old_val + increment, min, max));
-            app.SetParameter(page_, static_cast<uint8_t>(new_val));
+            auto old_val = S8(App::GetParameter(page_));
+            auto min = S8(page_def.min);
+            auto max = S8(page_def.max);
+            auto new_val = S8(Clip(old_val + increment, min, max));
+            App::SetParameter(page_, U8(new_val));
           } else { // UNSIGNED INTEGER
-            auto old_val = app.GetParameter(page_);
+            auto old_val = App::GetParameter(page_);
             auto min = page_def.min;
             auto max = page_def.max;
-            auto new_val = static_cast<uint8_t>(Clip(old_val + increment, min, max));
-            app.SetParameter(page_, static_cast<uint8_t>(new_val));
+            auto new_val = U8(Clip(old_val + increment, min, max));
+            App::SetParameter(page_, new_val);
           }
         } else {
           uint8_t current_page = page_;
@@ -179,9 +179,9 @@ void Ui::DoEvents() {
             if (page_ == 0xff) {
               page_ = 0;
             } else if (page_ >= num_pages_) {
-              page_ = num_pages_ - 1;
+              page_ = num_pages_ - 1_u8;
             }
-            uint8_t page_status = app.CheckPageStatus(page_);
+            uint8_t page_status = App::CheckPageStatus(page_);
             if (page_status == PAGE_GOOD) {
               break;
             } else if (page_status == PAGE_LAST) {
@@ -193,35 +193,35 @@ void Ui::DoEvents() {
       }
     } else if (e.control_type == CONTROL_ENCODER_CLICK) {
       if (e.value == 1) {
-        if (!app.OnClick()) {
+        if (!App::OnClick()) {
           if (page_def.value_res_id == STR_RES_OFF) {
-            app.SetParameter(page_, app.GetParameter(page_) ? 0 : 1);
-            app.SaveSetting(page_);
+            App::SetParameter(page_, App::GetParameter(page_) ? 0_u8 : 1_u8);
+            App::SaveSetting(page_);
           } else {
-            editing_ ^= 1;
+            editing_ = !editing_;
             // Left the editing mode, save settings.
             if (!editing_) {
-              app.SaveSetting(page_);
+              App::SaveSetting(page_);
             }
           }
         }
       } else {
-        app.Launch(0);
+        App::Launch(0);
       }
     } else if (e.control_type == CONTROL_POT) {
-      app.OnPot(e.control_id, e.value);
+      App::OnPot(e.control_id, e.value);
     }
   }
   
   if (queue_.idle_time_ms() > 50) {
     redraw = 1;
     queue_.Touch();
-    if (app.app_name() == STR_RES_MONITOR) {
+    if (App::app_name() == STR_RES_MONITOR) {
       apps::Monitor::OnIdle();
     }
   }
   
-  if (redraw && !app.OnRedraw()) {
+  if (redraw && !App::OnRedraw()) {
     uint8_t p = page_;
     uint8_t index = 0;
     while (p >= num_declared_pages_ && num_declared_pages_ && stride_) {
@@ -231,13 +231,11 @@ void Ui::DoEvents() {
     const PageDefinition& page_def = pages_[p];
     
     PrintKeyValuePair(
-        page_def.key_res_id,
-        index,
-        page_def.value_res_id,
-        app.GetParameter(page_),
+        page_def.key_res_id, index,
+        page_def.value_res_id, App::GetParameter(page_),
         editing_);
   }
-  display.Tick();
+  Display::Tick();
 }
 
 static const char note_names[] PROGMEM =      " CC# DD# E FF# GG# AA# B";
@@ -246,11 +244,9 @@ static const char octaves[] PROGMEM = "-012345678";
 
 /* static */
 void Ui::PrintKeyValuePair(
-    uint8_t key_res_id,
-    uint8_t index,
-    uint8_t value_res_id,
-    uint8_t value,
-    uint8_t selected) {
+    uint8_t key_res_id, uint8_t index,
+    uint8_t value_res_id, uint8_t value,
+    bool editing) {
   memset(line_buffer, ' ', kLcdWidth);
   if (key_res_id == UNIT_CHANNEL) {
     line_buffer[0] = 'c';
@@ -304,18 +300,18 @@ void Ui::PrintKeyValuePair(
       break;
   }
   AlignRight(&line_buffer[4], 3);
-  if (selected) {
+  if (editing) {
     line_buffer[3] = '[';
     line_buffer[7] = ']';
   }
-  display.Print(0, line_buffer);
+  Display::Print(0, line_buffer);
 }
 
 /* static */
 void Ui::PrintString(uint8_t res_id) {
   ResourcesManager::LoadStringResource(res_id, &line_buffer[0], 8);
   AlignRight(&line_buffer[0], 8);
-  display.Print(0, line_buffer);
+  Display::Print(0, line_buffer);
 }
 
 
@@ -326,15 +322,19 @@ void Ui::Clear() {
 
 /* static */
 void Ui::PrintChannel(char* buffer, uint8_t channel) {
-  *buffer = (channel == 0xff)
-      ? ' '
-      : ((channel < 9) ? '1' + channel : (channel - 8));
+  if (channel == 0xff) {
+    *buffer = ' ';
+  } else if (channel < 9) {
+    *buffer = '1' + channel;
+  } else {
+    *buffer = channel - 8_u8;
+  }
 }
 
 /* static */
 void Ui::PrintHex(char* buffer, uint8_t value) {
   *buffer++ = NibbleToAscii(U8ShiftRight4(value));
-  *buffer = NibbleToAscii(value & 0xf);
+  *buffer = NibbleToAscii(byteAnd(value, 0xf));
 }
 
 /* static */
@@ -345,14 +345,14 @@ void Ui::PrintNote(char* buffer, uint8_t note, bool flat) {
     note -= 12;
   }
   const char* const table = flat ? note_names_flat : note_names;
-  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(table, note << 1);
-  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(table, 1 + (note << 1));
+  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(table, note << 1u);
+  *buffer++ = ResourcesManager::Lookup<char, uint8_t>(table, U8(1 + (note << 1u)));
   *buffer = ResourcesManager::Lookup<char, uint8_t>(octaves, octave);
 }
 
 /* static */
 void Ui::RefreshScreen() {
-  display.Print(0, line_buffer);
+  Display::Print(0, line_buffer);
 }
 
 }  // namespace midipal

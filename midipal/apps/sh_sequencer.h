@@ -22,13 +22,37 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-static const uint8_t kShSequencerNumSteps = 100;
 
 class ShSequencer {
- public:
-  ShSequencer() { }
+  static constexpr uint8_t kNumSteps = 100;
+
+public:
+  // *_end_ variables mark the end (last index) of multi-byte parameters
+  enum Parameter : uint8_t {
+    running_,
+    recording_,
+    clk_mode_,
+    bpm_,
+    groove_template_,
+    groove_amount_,
+    clock_division_,
+    channel_,
+    num_steps_,
+    sequence_data_,
+    sequence_data_end_ = (sequence_data_ + kNumSteps) - 1,
+    slide_data_,
+    slide_data_end_ = (slide_data_ + kNumSteps / 8 + 1) - 1,
+    accent_data_,
+    accent_data_end_ = (accent_data_ + kNumSteps / 8 + 1) - 1,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -44,10 +68,7 @@ class ShSequencer {
   static void OnStop();
   static void OnClock(uint8_t clock_mode);
   
-  static void OnControlChange(
-      uint8_t channel,
-      uint8_t controller,
-      uint8_t value);
+  static void OnControlChange(uint8_t channel, uint8_t cc_num, uint8_t value);
   static void OnPitchBend(uint8_t channel, uint16_t value);
 
   static uint8_t OnClick();
@@ -56,27 +77,53 @@ class ShSequencer {
   
   static void SetParameter(uint8_t key, uint8_t value);
   
-  static const AppInfo app_info_ PROGMEM;
-  
+
  private:
   static void Stop();
   static void Start();
   static void Tick();
   static void SaveAndAdvanceStep();
   static void AddSlideAccent(uint8_t is_accent);
-  
-  static uint8_t running_;
-  static uint8_t recording_;
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  static uint8_t clock_division_;  
-  static uint8_t channel_;
-  static uint8_t num_steps_;
-  static uint8_t sequence_data_[kShSequencerNumSteps];
-  static uint8_t slide_data_[kShSequencerNumSteps / 8 + 1];
-  static uint8_t accent_data_[kShSequencerNumSteps / 8 + 1];
+
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static uint8_t& running() {
+    return ParameterValue(running_);
+  }
+  static uint8_t& recording() {
+    return ParameterValue(recording_);
+  }
+  static uint8_t& clk_mode() {
+    return ParameterValue(clk_mode_);
+  }
+  static uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static uint8_t& groove_template() {
+    return ParameterValue(groove_template_);
+  }
+  static uint8_t& groove_amount() {
+    return ParameterValue(groove_amount_);
+  }
+  static uint8_t& clock_division() {
+    return ParameterValue(clock_division_);
+  }
+  static uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static uint8_t& num_steps() {
+    return ParameterValue(num_steps_);
+  }
+  static uint8_t* sequence_data() {
+    return &settings[sequence_data_];
+  }
+  static uint8_t* slide_data() {
+    return &settings[slide_data_];
+  }
+  static uint8_t* accent_data() {
+    return &settings[accent_data_];
+  }
   
   static uint8_t midi_clock_prescaler_;
   static uint8_t tick_;
@@ -89,6 +136,7 @@ class ShSequencer {
   DISALLOW_COPY_AND_ASSIGN(ShSequencer);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_SH_SEQUENCER_H_

@@ -24,18 +24,17 @@
 #include "midipal/notes.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+#include "midi/midi_constants.h"
+
+namespace midipal {
+namespace apps{
 
 using namespace avrlib;
 
-const uint8_t transposer_factory_data[2] PROGMEM = {
+/* static */
+const uint8_t Transposer::factory_data[Parameter::COUNT] PROGMEM = {
   0, 0
 };
-
-/* <static> */
-uint8_t Transposer::channel_;
-int8_t Transposer::transposition_;
-/* </static> */
 
 /* static */
 const AppInfo Transposer::app_info_ PROGMEM = {
@@ -43,37 +42,45 @@ const AppInfo Transposer::app_info_ PROGMEM = {
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
   &OnNoteAftertouch, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
-  NULL, // void (*OnClock)();
-  NULL, // void (*OnStart)();
-  NULL, // void (*OnContinue)();
-  NULL, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
-  NULL, // void (*OnRawByte)(uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnClock)();
+  nullptr, // void (*OnStart)();
+  nullptr, // void (*OnContinue)();
+  nullptr, // void (*OnStop)();
+  nullptr, // bool *(CheckChannel)(uint8_t);
+  nullptr, // void (*OnRawByte)(uint8_t);
   &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
-  NULL, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
-  NULL, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  2, // settings_size
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // uint8_t (*OnClick)();
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnRedraw)();
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_SCALE_PROCESSOR, // settings_offset
-  &channel_, // settings_data
-  transposer_factory_data, // factory_data
+  settings, // settings_data
+  factory_data, // factory_data
   STR_RES_SCALE, // app_name
   true
 };
 
 /* static */
 void Transposer::OnInit() {
-  ui.AddPage(STR_RES_CHN, UNIT_INTEGER_ALL, 0, 16);
-  ui.AddPage(STR_RES_TRS, UNIT_SIGNED_INTEGER, -24, 24);
+  Ui::AddPage(STR_RES_CHN, UNIT_INTEGER_ALL, 0, 16);
+  Ui::AddPage(STR_RES_TRS, UNIT_SIGNED_INTEGER, -24, 24);
+}
+
+bool Transposer::isActiveChannel(uint8_t channel) {
+  return Transposer::channel() == 0 || Transposer::channel() == channel + 1;
+}
+
+uint8_t Transposer::transposedNote(uint8_t note) {
+  return Transpose(note, transposition());
 }
 
 /* static */
@@ -82,49 +89,34 @@ void Transposer::OnRawMidiData(
    uint8_t* data,
    uint8_t data_size,
    uint8_t accepted_channel) {
-  // Forward everything except note on for the selected channel.
-  uint8_t kind = status & 0xf0;
-  bool is_note = (kind == 0x80) || (kind == 0x90) || (kind == 0xa0);
-  bool selected_channel = (channel_ == 0) || (((status & 0x0f) + 1) == channel_);
-  if (!is_note || !selected_channel) {
-    app.Send(status, data, data_size);
+  const auto type = byteAnd(status, 0xf0);
+  const auto channel = byteAnd(status, 0x0f);
+  bool is_note = type == MIDI_NOTE_OFF || type == MIDI_NOTE_ON || type == MIDI_POLY_AFTERTOUCH;
+  if (!is_note || !isActiveChannel(channel)) {
+    App::Send(status, data, data_size);
   }
 }
 
 /* static */
-void Transposer::OnNoteOn(
-    uint8_t channel,
-    uint8_t note,
-    uint8_t velocity) {
-  bool selected_channel = (channel_ == 0) || ((channel + 1) == channel_);
-  if (!selected_channel) {
-    return;
+void Transposer::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
+  if (isActiveChannel(channel)) {
+    App::Send3(noteOnFor(channel), transposedNote(note), velocity);
   }
-  app.Send3(0x90 | channel, Transpose(note, transposition_), velocity);
 }
 
 /* static */
-void Transposer::OnNoteOff(
-    uint8_t channel,
-    uint8_t note,
-    uint8_t velocity) {
-  bool selected_channel = (channel_ == 0) || ((channel + 1) == channel_);
-  if (!selected_channel) {
-    return;
+void Transposer::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
+  if (isActiveChannel(channel)) {
+    App::Send3(noteOffFor(channel), transposedNote(note), velocity);
   }
-  app.Send3(0x80 | channel, Transpose(note, transposition_), velocity);
 }
 
 /* static */
-void Transposer::OnNoteAftertouch(
-    uint8_t channel,
-    uint8_t note,
-    uint8_t velocity) {
-  bool selected_channel = (channel_ == 0) || ((channel + 1) == channel_);
-  if (!selected_channel) {
-    return;
+void Transposer::OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity) {
+  if (isActiveChannel(channel)) {
+    App::Send3(polyAftertouchFor(channel), transposedNote(note), velocity);
   }
-  app.Send3(0xa0 | channel, Transpose(note, transposition_), velocity);
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

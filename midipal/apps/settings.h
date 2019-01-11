@@ -23,33 +23,50 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Settings {
  public:
-  Settings() { }
+  enum Parameter : uint8_t {
+    filter_active_sensing_,
+    remote_control_channel_,
+    note_clock_channel_,
+    note_clock_note_,
+    note_clock_ticks_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawByte(uint8_t byte);
  
-  static const AppInfo app_info_ PROGMEM;
- 
-  static uint8_t filter_active_sensing() { return filter_active_sensing_; }
-  static uint8_t remote_control_channel() { return remote_control_channel_; }
-  static uint8_t note_clock_channel() { return note_clock_channel_; }
-  static uint8_t note_clock_note() { return note_clock_note_; }
-  static uint8_t note_clock_ticks() { return note_clock_ticks_; }
+  static inline uint8_t& remote_control_channel() {
+    return ParameterValue(remote_control_channel_);
+  }
+  static inline uint8_t& filter_active_sensing() {
+    return ParameterValue(filter_active_sensing_);
+  }
+  static inline uint8_t& note_clock_channel() {
+    return ParameterValue(note_clock_channel_);
+  }
+  static inline uint8_t& note_clock_note() {
+    return ParameterValue(note_clock_note_);
+  }
+  static inline uint8_t& note_clock_ticks() {
+    return ParameterValue(note_clock_ticks_);
+  }
+private:
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
 
- private:
-  static uint8_t filter_active_sensing_;
-  static uint8_t remote_control_channel_;
-  static uint8_t note_clock_channel_;
-  static uint8_t note_clock_note_;
-  static uint8_t note_clock_ticks_;
-  
   DISALLOW_COPY_AND_ASSIGN(Settings);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_SETTINGS_H_

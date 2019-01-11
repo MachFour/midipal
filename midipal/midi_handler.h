@@ -36,73 +36,73 @@ struct MidiHandler : public midi::MidiDevice {
   typedef avrlib::DataTypeForSize<data_size>::Type Value;
 
   static void NoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
-    app.OnNoteOn(channel, note, velocity);
+    App::OnNoteOn(channel, note, velocity);
   }
 
   static void NoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
-    app.OnNoteOff(channel, note, velocity);
+    App::OnNoteOff(channel, note, velocity);
   }
 
   static void Aftertouch(uint8_t channel, uint8_t note, uint8_t velocity) {
-    app.OnAftertouch(channel, note, velocity);
+    App::OnAftertouch(channel, note, velocity);
   }
 
   static void Aftertouch(uint8_t channel, uint8_t velocity) {
-    app.OnAftertouch(channel, velocity);
+    App::OnAftertouch(channel, velocity);
   }
 
   static void ControlChange(uint8_t channel, uint8_t controller,
                              uint8_t value) {
-    app.OnControlChange(channel, controller, value);
+    App::OnControlChange(channel, controller, value);
   }
 
   static void ProgramChange(uint8_t channel, uint8_t program) {
-    app.OnProgramChange(channel, program);
+    App::OnProgramChange(channel, program);
   }
 
   static void PitchBend(uint8_t channel, uint16_t pitch_bend) {
-    app.OnPitchBend(channel, pitch_bend);
+    App::OnPitchBend(channel, pitch_bend);
   }
 
   static void SysExStart() {
-    app.OnSysExByte(0xf0);
+    App::OnSysExByte(0xf0);
     sysex_handler.Receive(0xf0);
   }
 
   static void SysExByte(uint8_t sysex_byte) {
-    app.OnSysExByte(sysex_byte);
+    App::OnSysExByte(sysex_byte);
     sysex_handler.Receive(sysex_byte);
   }
 
   static void SysExEnd() {
-    app.OnSysExByte(0xf7);
+    App::OnSysExByte(0xf7);
     sysex_handler.Receive(0xf7);
   }
 
   static void BozoByte(uint8_t bozo_byte) { }
 
   static void Clock() {
-    app.OnClock(CLOCK_MODE_EXTERNAL);
+    App::OnClock(CLOCK_MODE_EXTERNAL);
   }
 
   static void Start() {
-    app.OnStart();
+    App::OnStart();
   }
 
   static void Continue() {
-    app.OnContinue();
+    App::OnContinue();
   }
 
   static void Stop() {
-    app.OnStop();
+    App::OnStop();
   }
 
   static uint8_t CheckChannel(uint8_t channel) {
-    return app.CheckChannel(channel);
+    return App::CheckChannel(channel);
   }
 
   static void RawByte(uint8_t byte) {
-    app.OnRawByte(byte);
+    App::OnRawByte(byte);
   }
 
   static void RawMidiData(
@@ -110,7 +110,7 @@ struct MidiHandler : public midi::MidiDevice {
       uint8_t* data,
       uint8_t data_size,
       uint8_t accepted_channel) {
-    app.OnRawMidiData(
+    App::OnRawMidiData(
         status,
         data,
         data_size,

@@ -505,27 +505,27 @@ const uint16_t lut_res_drum_patterns[] PROGMEM = {
    54741,  30583,  25666,  65535,      0,  18504,  21761,  18688,
    61456,  42116,   4168,  16657,   5193,  21845,  22616,  25253,
 };
-const int16_t lut_res_groove_swing[] PROGMEM = {
+const uint16_t lut_res_groove_swing[] PROGMEM = {
      127,    127,   -127,   -127,    127,    127,   -127,   -127,
      127,    127,   -127,   -127,    127,    127,   -127,   -127,
 };
-const int16_t lut_res_groove_shuffle[] PROGMEM = {
+const uint16_t lut_res_groove_shuffle[] PROGMEM = {
      127,   -127,    127,   -127,    127,   -127,    127,   -127,
      127,   -127,    127,   -127,    127,   -127,    127,   -127,
 };
-const int16_t lut_res_groove_push[] PROGMEM = {
+const uint16_t lut_res_groove_push[] PROGMEM = {
      -63,    -63,    127,      0,   -127,      0,      0,     88,
        0,      0,     88,    -50,    -88,      0,     88,      0,
 };
-const int16_t lut_res_groove_lag[] PROGMEM = {
+const uint16_t lut_res_groove_lag[] PROGMEM = {
       19,     44,     93,     -4,     32,    -53,    -90,   -127,
      117,     32,   -102,    -53,    105,    -53,     93,    -53,
 };
-const int16_t lut_res_groove_human[] PROGMEM = {
+const uint16_t lut_res_groove_human[] PROGMEM = {
       88,   -101,    107,    -95,     88,    -88,     50,    -38,
       65,    -88,    101,    -95,    101,   -127,     63,    -31,
 };
-const int16_t lut_res_groove_monkey[] PROGMEM = {
+const uint16_t lut_res_groove_monkey[] PROGMEM = {
       70,    -84,     84,   -112,     84,    -98,    112,    -98,
       54,    -70,    127,    -84,    127,   -112,     84,    -84,
 };
@@ -655,12 +655,12 @@ const uint16_t lut_res_increments[] PROGMEM = {
 const uint16_t* const lookup_table_table[] PROGMEM = {
   lut_res_arpeggiator_patterns,
   lut_res_drum_patterns,
-  reinterpret_cast<const uint16_t*>(lut_res_groove_swing),
-  reinterpret_cast<const uint16_t*>(lut_res_groove_shuffle),
-  reinterpret_cast<const uint16_t*>(lut_res_groove_push),
-  reinterpret_cast<const uint16_t*>(lut_res_groove_lag),
-  reinterpret_cast<const uint16_t*>(lut_res_groove_human),
-  reinterpret_cast<const uint16_t*>(lut_res_groove_monkey),
+  lut_res_groove_swing,
+  lut_res_groove_shuffle,
+  lut_res_groove_push,
+  lut_res_groove_lag,
+  lut_res_groove_human,
+  lut_res_groove_monkey,
   lut_res_euclidian_patterns,
   lut_res_scale_0,
   lut_res_scale_1,

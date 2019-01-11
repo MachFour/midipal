@@ -22,26 +22,26 @@
 
 namespace midi {
 
-const uint8_t kBankLsb = 0x20;
-const uint8_t kModulationWheelMsb = 0x01;
-const uint8_t kModulationWheelJoystickMsb = 0x02;
-const uint8_t kDataEntryMsb = 0x06;
-const uint8_t kVolume = 0x07;
-const uint8_t kDataEntryLsb = 0x26;
-const uint8_t kPortamentoTimeMsb = 0x05;
-const uint8_t kHoldPedal = 0x40;
-const uint8_t kHarmonicIntensity = 0x47;
-const uint8_t kRelease = 0x48;
-const uint8_t kAttack = 0x49;
-const uint8_t kBrightness = 0x4a;
-const uint8_t kDataIncrement = 0x60;
-const uint8_t kDataDecrement = 0x61;
-const uint8_t kNrpnMsb = 0x63;
-const uint8_t kNrpnLsb = 0x62;
-const uint8_t kAssignableCcA = 0x10;
-const uint8_t kAssignableCcB = 0x11;
-const uint8_t kAssignableCcC = 0x12;
-const uint8_t kAssignableCcD = 0x13;
+constexpr uint8_t kBankLsb = 0x20;
+constexpr uint8_t kModulationWheelMsb = 0x01;
+constexpr uint8_t kModulationWheelJoystickMsb = 0x02;
+constexpr uint8_t kDataEntryMsb = 0x06;
+constexpr uint8_t kVolume = 0x07;
+constexpr uint8_t kDataEntryLsb = 0x26;
+constexpr uint8_t kPortamentoTimeMsb = 0x05;
+constexpr uint8_t kHoldPedal = 0x40;
+constexpr uint8_t kHarmonicIntensity = 0x47;
+constexpr uint8_t kRelease = 0x48;
+constexpr uint8_t kAttack = 0x49;
+constexpr uint8_t kBrightness = 0x4a;
+constexpr uint8_t kDataIncrement = 0x60;
+constexpr uint8_t kDataDecrement = 0x61;
+constexpr uint8_t kNrpnMsb = 0x63;
+constexpr uint8_t kNrpnLsb = 0x62;
+constexpr uint8_t kAssignableCcA = 0x10;
+constexpr uint8_t kAssignableCcB = 0x11;
+constexpr uint8_t kAssignableCcC = 0x12;
+constexpr uint8_t kAssignableCcD = 0x13;
 
 // A device that responds to MIDI messages should implement this interface.
 // Everything is static - this is because the main synth class is a "static
@@ -51,8 +51,7 @@ struct MidiDevice {
   static void NoteOff(uint8_t channel, uint8_t note, uint8_t velocity) { }
   static void Aftertouch(uint8_t channel, uint8_t note, uint8_t velocity) { }
   static void Aftertouch(uint8_t channel, uint8_t velocity) { }
-  static void ControlChange(uint8_t channel, uint8_t controller,
-                             uint8_t value) { }
+  static void ControlChange(uint8_t channel, uint8_t controller, uint8_t value) { }
   static void ProgramChange(uint8_t channel, uint8_t program) { }
   static void PitchBend(uint8_t channel, uint16_t pitch_bend) { }
 
@@ -78,11 +77,7 @@ struct MidiDevice {
 
   static uint8_t CheckChannel(uint8_t channel) { return 1; }
   static void RawByte(uint8_t byte) { }
-  static void RawMidiData(
-      uint8_t status,
-      uint8_t* data,
-      uint8_t data_size,
-      uint8_t accepted_channel) { }
+  static void RawMidiData(uint8_t status, uint8_t* data, uint8_t data_size, uint8_t accepted_channel) { }
 };
 
 template<typename Device>

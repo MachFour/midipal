@@ -22,11 +22,29 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Delay {
  public:
-  Delay() { }
+  enum Parameter : uint8_t {
+    clk_mode_,
+    bpm_,
+    groove_template_,
+    groove_amount_,
+    channel_,
+    delay_,
+    num_taps_,
+    velocity_factor_,
+    transposition_,
+    doppler_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
+
 
   static void OnInit();
   static void OnRawMidiData(
@@ -43,31 +61,53 @@ class Delay {
   static void OnClock(uint8_t clock_mode);
 
   static void SetParameter(uint8_t key, uint8_t value);
-  
-  static const AppInfo app_info_ PROGMEM;
 
- protected:
+protected:
   static void ScheduleEchoes(uint8_t note, uint8_t velocity, uint8_t num_taps);
   static void SendEchoes();
-  
-  static uint8_t running_;
-   
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  static uint8_t channel_;
-  static uint8_t delay_;
-  static uint8_t num_taps_;
-  static uint8_t velocity_factor_;
-  static int8_t transposition_;
-  static int8_t doppler_;
 
+private:
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& clk_mode() {
+    return ParameterValue(clk_mode_);
+  }
+  static inline uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static inline uint8_t& groove_template() {
+    return ParameterValue(groove_template_);
+  }
+  static inline uint8_t& groove_amount() {
+    return ParameterValue(groove_amount_);
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& delay() {
+    return ParameterValue(delay_);
+  }
+  static inline uint8_t& num_taps() {
+    return ParameterValue(num_taps_);
+  }
+  static inline uint8_t& velocity_factor() {
+    return ParameterValue(velocity_factor_);
+  }
+  static inline uint8_t& transposition() {
+    return ParameterValue(transposition_);
+  }
+  static inline uint8_t& doppler() {
+    return ParameterValue(clk_mode_);
+  }
+
+  static uint8_t running_;
   static uint8_t velocity_factor_reverse_log_;
   
   DISALLOW_COPY_AND_ASSIGN(Delay);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif  // MIDIPAL_APPS_DELAY_H_

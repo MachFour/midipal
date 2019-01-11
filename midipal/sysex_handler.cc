@@ -119,13 +119,13 @@ void SysExHandler::AcceptCommand() {
   switch (command_[0]) {
     case 0x01:  // Data transfer
       eeprom_write_block(&buffer_[2], p, command_[1]);
-      app.LoadSettings();
+      App::LoadSettings();
       break;
     case 0x02:
-      app.Launch(0);
-      app.Init();
-      app.SetParameter(0, command_[1]);
-      app.SaveSettings();
+      App::Launch(0);
+      App::Init();
+      App::SetParameter(0, command_[1]);
+      App::SaveSettings();
       SystemReset(100);
       while (1);
       break;

@@ -60,12 +60,8 @@ class Ui {
   
   static void Clear();
 
-  static void PrintKeyValuePair(
-      uint8_t key_res_id,
-      uint8_t index,
-      uint8_t value_res_id,
-      uint8_t value,
-      uint8_t selected);
+  static void PrintKeyValuePair( uint8_t key_res_id, uint8_t index,
+      uint8_t value_res_id, uint8_t value, bool editing );
   static void PrintChannel(char* buffer, uint8_t channel);
   static void PrintHex(char* buffer, uint8_t value);
   static void PrintNote(char* buffer, uint8_t note, bool flat);
@@ -93,7 +89,7 @@ class Ui {
   static void AddClockPages();
   
   static uint8_t page_index();
-  static inline uint8_t editing() { return editing_; }
+  static inline bool editing() { return editing_; }
   static inline uint8_t page() { return page_; }
   static inline void set_page(uint8_t page) { page_ = page; }
   static const PageDefinition& page_definition(uint8_t offset) {
@@ -113,13 +109,11 @@ class Ui {
   static uint8_t num_pages_;
   static uint8_t stride_;
   static uint8_t page_;
-  static uint8_t editing_;
+  static bool editing_;
   static uint8_t read_pots_;
   static uint8_t pot_value_[8];
   static PageDefinition pages_[48];
 };
-
-extern Ui ui;
 
 }  // namespace midipal
 

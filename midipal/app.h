@@ -22,7 +22,7 @@
 
 namespace midipal {
 
-enum EepromSetting {
+enum EepromSetting : uint16_t {
   // Settings must be defined here. Please leave some space between them
   // to allow for future improvements of apps.
   SETTINGS_POLY_SEQUENCER = 24,
@@ -73,17 +73,19 @@ struct AppInfo {
   void (*OnStart)();
   void (*OnContinue)();
   void (*OnStop)();
-  uint8_t (*CheckChannel)(uint8_t);
+  bool (*CheckChannel)(uint8_t);
   void (*OnRawByte)(uint8_t);
   void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
   uint8_t (*OnIncrement)(int8_t);
   uint8_t (*OnClick)();
   uint8_t (*OnPot)(uint8_t, uint8_t);
   uint8_t (*OnRedraw)();
+
   void (*SetParameter)(uint8_t, uint8_t);
   uint8_t (*GetParameter)(uint8_t);
   uint8_t (*CheckPageStatus)(uint8_t);
 
+  // TODO uint8_t settings_size;
   uint16_t settings_size;
   uint16_t settings_offset;
   uint8_t* settings_data;
@@ -101,13 +103,10 @@ struct AppInfo {
 
 class App {
  public:
-  App() { }
-
   static void Init();
 
   // Can be used to save/load settings in EEPROM.
-  static void SaveSetting(uint16_t index);
-  static void SaveSettingWord(uint16_t setting_id, uint16_t value);
+  static void SaveSetting(uint16_t key);
   static void SaveSettings();
   static void LoadSettings();
   static void ResetToFactorySettings();
@@ -115,51 +114,49 @@ class App {
 
   static void OnInit() {
     if (app_info_.OnInit) {
-      (*app_info_.OnInit)();
+      app_info_.OnInit();
     }
   }
   static void OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
     if (app_info_.OnNoteOn) {
-      (*app_info_.OnNoteOn)(channel, note, velocity);
+      app_info_.OnNoteOn(channel, note, velocity);
     }
   }
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
     if (app_info_.OnNoteOff) {
-      (*app_info_.OnNoteOff)(channel, note, velocity);
+      app_info_.OnNoteOff(channel, note, velocity);
     }
   }
   static void OnAftertouch(uint8_t channel, uint8_t note, uint8_t velocity) {
     if (app_info_.OnNoteAftertouch) {
-      (*app_info_.OnNoteAftertouch)(channel, note, velocity);
+      app_info_.OnNoteAftertouch(channel, note, velocity);
     }
   }
   static void OnAftertouch(uint8_t channel, uint8_t velocity) {
     if (app_info_.OnAftertouch) {
-      (*app_info_.OnAftertouch)(channel, velocity);
+      app_info_.OnAftertouch(channel, velocity);
     }
   }
-  static void OnControlChange(uint8_t channel, uint8_t controller,
-                              uint8_t value) {
-    RemoteControl(channel, controller, value);
+  static void OnControlChange(uint8_t channel, uint8_t cc_num, uint8_t value) {
+    RemoteControl(channel, cc_num, value);
     if (app_info_.OnControlChange) {
-      (*app_info_.OnControlChange)(channel, controller, value);
+      app_info_.OnControlChange(channel, cc_num, value);
     }
   }
   static void OnProgramChange(uint8_t channel, uint8_t program) {
     if (app_info_.OnProgramChange) {
-      (*app_info_.OnProgramChange)(channel, program);
+      app_info_.OnProgramChange(channel, program);
     }
   }
   static void OnPitchBend(uint8_t channel, uint16_t pitch_bend) {
     if (app_info_.OnPitchBend) {
-      (*app_info_.OnPitchBend)(channel, pitch_bend);
+      app_info_.OnPitchBend(channel, pitch_bend);
     }
   }
   static void OnSysExByte(uint8_t sysex_byte) {
     if (app_info_.OnSysExByte) {
-      (*app_info_.OnSysExByte)(sysex_byte);
-    }
-    if (app_info_.OnRawByte == NULL) {
+      app_info_.OnSysExByte(sysex_byte);
+    } else if (!app_info_.OnRawByte) {
       // Forwarding will not be handled by OnRawByte, nor by OnRawMidiData,
       // so we do it explicitly here.
       SendNow(sysex_byte);
@@ -168,36 +165,36 @@ class App {
 
   static void OnClock(uint8_t clock_mode) {
     if (app_info_.OnClock) {
-      (*app_info_.OnClock)(clock_mode);
+      app_info_.OnClock(clock_mode);
     }
   }
   static void OnStart() {
     if (app_info_.OnStart) {
-      (*app_info_.OnStart)();
+      app_info_.OnStart();
     }
   }
   static void OnContinue() {
     if (app_info_.OnContinue) {
-      (*app_info_.OnContinue)();
+      app_info_.OnContinue();
     }
   }
   static void OnStop() {
     if (app_info_.OnStop) {
-      (*app_info_.OnStop)();
+      app_info_.OnStop();
     }
   }
 
-  static uint8_t CheckChannel(uint8_t channel) {
+  static bool CheckChannel(uint8_t channel) {
     if (app_info_.CheckChannel) {
-      return (*app_info_.CheckChannel)(channel);
+      return app_info_.CheckChannel(channel);
     } else {
-      return 1;
+      return true;
     }
   }
 
   static void OnRawByte(uint8_t byte) {
    if (app_info_.OnRawByte) {
-      (*app_info_.OnRawByte)(byte);
+      app_info_.OnRawByte(byte);
     }
   }
   static void OnRawMidiData(
@@ -206,51 +203,84 @@ class App {
      uint8_t data_size,
      uint8_t accepted_channel) {
     if (app_info_.OnRawMidiData) {
-      (*app_info_.OnRawMidiData)(status, data, data_size, accepted_channel);
+      app_info_.OnRawMidiData(status, data, data_size, accepted_channel);
     }
   }
 
   // Event handlers for UI.
   static uint8_t OnIncrement(int8_t increment) {
-    return app_info_.OnIncrement ? (*app_info_.OnIncrement)(increment) : 0;
+    if (app_info_.OnIncrement) {
+      return app_info_.OnIncrement(increment);
+    } else {
+      return 0;
+    }
   }
+
   static uint8_t OnClick() {
-    return app_info_.OnClick ? (*app_info_.OnClick)() : 0;
+    if (app_info_.OnClick) {
+      return app_info_.OnClick();
+    } else {
+      return 0;
+    }
   }
   static uint8_t OnPot(uint8_t pot, uint8_t value) {
-    return app_info_.OnPot ? (*app_info_.OnPot)(pot, value) : 0;
+    if (app_info_.OnPot) {
+      return app_info_.OnPot(pot, value);
+    } else {
+      return 0;
+    }
   }
   static uint8_t OnRedraw() {
-    return app_info_.OnRedraw ? (*app_info_.OnRedraw)() : 0;
+    if (app_info_.OnRedraw) {
+      return app_info_.OnRedraw();
+    } else {
+      return 0;
+    }
   }
 
   // Parameter and page checking.
   static void SetParameter(uint8_t key, uint8_t value) {
-    if (app_info_.SetParameter) {
-      (*app_info_.SetParameter)(key, value);
+    if (key >= num_parameters()) {
+      // out of bounds, do nothing
+      return;
+    } else if (app_info_.SetParameter) {
+      app_info_.SetParameter(key, value);
     } else {
       settings_data()[key] = value;
     }
   }
   static uint8_t GetParameter(uint8_t key) {
-    if (app_info_.GetParameter) {
-      return (*app_info_.GetParameter)(key);
+    if (key >= num_parameters()) {
+      // out of bounds, try to return something loud
+      return -1;
+    } else if (app_info_.GetParameter) {
+      return app_info_.GetParameter(key);
     } else {
       return settings_data()[key];
     }
   }
+
   static uint8_t CheckPageStatus(uint8_t index) {
-    return app_info_.CheckPageStatus ? (*app_info_.CheckPageStatus)(index) : 1;
+    if (app_info_.CheckPageStatus) {
+      return app_info_.CheckPageStatus(index);
+    } else {
+      return 1;
+    }
   }
 
   // Access to settings data structure
-  static uint16_t settings_size() { return app_info_.settings_size; }
-  static uint16_t settings_offset() { return app_info_.settings_offset; }
-  static uint8_t* settings_data() { return app_info_.settings_data; }
+  static inline uint8_t num_parameters() {
+    // TODO record number parameters distinctly from size
+    // OR each parameter stores its own size
+    return static_cast<uint8_t>(settings_size());
+  }
+  static inline uint16_t settings_size() { return app_info_.settings_size; }
+  static inline uint16_t settings_offset() { return app_info_.settings_offset; }
+  static inline uint8_t* settings_data() { return app_info_.settings_data; }
   // in PROGMEM
-  static const uint8_t* factory_data() { return app_info_.factory_data; }
-  static uint8_t app_name() { return app_info_.app_name; }
-  static bool realtime_clock_handling() {
+  static inline const uint8_t* factory_data() { return app_info_.factory_data; }
+  static inline uint8_t app_name() { return app_info_.app_name; }
+  static inline bool realtime_clock_handling() {
     return app_info_.realtime_clock_handling;
   }
 
@@ -266,20 +296,18 @@ class App {
   static void FlushQueue(uint8_t channel);
 
   static uint8_t num_apps();
+
   static bool NoteClock(bool on, uint8_t channel, uint8_t note);
 
  private:
-  static void RemoteControl(uint8_t channel, uint8_t controller, uint8_t value);
+  static void RemoteControl(uint8_t channel, uint8_t cc_num, uint8_t value);
 
   static AppInfo app_info_;
-  static const AppInfo* registry[];
 
   DISALLOW_COPY_AND_ASSIGN(App);
 };
 
 extern const uint8_t midi_clock_tick_per_step[] PROGMEM;
-
-extern App app;
 
 }  // namespace midipal
 

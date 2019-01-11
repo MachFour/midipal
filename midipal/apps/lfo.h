@@ -22,7 +22,8 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 enum LfoSyncMode {
   LFO_SYNC_FREE_RUNNING,
@@ -39,11 +40,27 @@ struct LfoData {
   uint8_t sync_mode;
 };
 
-const uint8_t kNumLfos = 4;
 
 class Lfo {
  public:
-  Lfo() { }
+  static const uint8_t kNumLfos = 4;
+
+  enum Parameter : uint8_t {
+    running_,
+    clk_mode_,
+    bpm_,
+    groove_template_,
+    groove_amount_,
+    clock_division_,
+    channel_,
+    lfo_data_,
+    lfo_data_end_ = lfo_data_ + kNumLfos*sizeof(LfoData) - 1, /* last byte */
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -53,30 +70,47 @@ class Lfo {
      uint8_t accepted_channel);
   static void OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
-  
+
   static void OnContinue();
   static void OnStart();
   static void OnStop();
   static void OnClock(uint8_t clock_mode);
-  
+
   static void SetParameter(uint8_t key, uint8_t value);
-  
-  static const AppInfo app_info_ PROGMEM;
 
  private:
   static void Stop();
   static void Start();
   static void Tick();
-  
-  static uint8_t running_;
-  static uint8_t clk_mode_;
-  static uint8_t bpm_;
-  static uint8_t groove_template_;
-  static uint8_t groove_amount_;
-  static uint8_t clock_division_;  
-  static uint8_t channel_;
-  
-  static LfoData lfo_data_[kNumLfos];
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& running() {
+    return ParameterValue(running_);
+  }
+  static inline uint8_t& clk_mode() {
+    return ParameterValue(clk_mode_);
+  }
+  static inline uint8_t& bpm() {
+    return ParameterValue(bpm_);
+  }
+  static inline uint8_t& groove_template() {
+    return ParameterValue(groove_template_);
+  }
+  static inline uint8_t& groove_amount() {
+    return ParameterValue(groove_amount_);
+  }
+  static inline uint8_t& clock_division() {
+    return ParameterValue(clock_division_);
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+
+  static inline LfoData* lfo_data() {
+    return reinterpret_cast<LfoData*>(&settings[lfo_data_]);
+  }
 
   static uint16_t phase_[kNumLfos];
   static uint16_t phase_increment_[kNumLfos];
@@ -87,6 +121,7 @@ class Lfo {
   DISALLOW_COPY_AND_ASSIGN(Lfo);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_LFO_H_

@@ -15,19 +15,12 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Instance of the display class, configured for the Midipal project.
 
 #include "midipal/display.h"
 
 namespace midipal {
 
-/* extern */
-Lcd lcd;
-
-/* extern */
-BufferedDisplay<Lcd> display;
-
-/* extern */
+// holds the line buffer data declared 'extern' in the header'
 char line_buffer[kLcdWidth + 1];
 
 }  // namespace midipal

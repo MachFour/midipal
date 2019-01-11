@@ -23,57 +23,55 @@
 
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-const uint8_t controller_factory_data[9] PROGMEM = {
+/* static */
+uint8_t Controller::settings[Parameter::COUNT];
+
+const uint8_t Controller::factory_data[Parameter::COUNT] PROGMEM = {
   0, 7, 10, 74, 71, 73, 80, 72, 91
 };
 
 /* static */
-uint8_t Controller::channel_;
-
-/* static */
-uint8_t Controller::cc_[8];
-
-/* static */
 const AppInfo Controller::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
-  NULL, // void (*OnClock)();
-  NULL, // void (*OnStart)();
-  NULL, // void (*OnContinue)();
-  NULL, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
-  NULL, // void (*OnRawByte)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnClock)();
+  nullptr, // void (*OnStart)();
+  nullptr, // void (*OnContinue)();
+  nullptr, // void (*OnStop)();
+  nullptr, // bool *(CheckChannel)(uint8_t);
+  nullptr, // void (*OnRawByte)(uint8_t);
   &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
-  NULL, // uint8_t (*OnClick)();
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // uint8_t (*OnClick)();
   &OnPot, // uint8_t (*OnPot)(uint8_t, uint8_t);
-  NULL, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  9, // settings_size
+  nullptr, // uint8_t (*OnRedraw)();
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_CONTROLLER, // settings_offset
-  &channel_, // settings_data
-  controller_factory_data, // factory_data
+  settings, // settings_data
+  factory_data, // factory_data
   STR_RES_CONTRLLR, // app_name
   true
 };
 
 /* static */
 void Controller::OnInit() {
-  ui.set_read_pots(1);
-  ui.AddPage(STR_RES_CHN, UNIT_INDEX, 0, 15);
+  Ui::set_read_pots(1);
+  Ui::AddPage(STR_RES_CHN, UNIT_INDEX, 0, 15);
   for (uint8_t i = 0; i < 8; ++i) {
-    ui.AddPage(STR_RES_CC1 + i, UNIT_INTEGER, 0, 127);
+    Ui::AddPage(STR_RES_CC1 + i, UNIT_INTEGER, 0, 127);
   }
 }
 
@@ -83,13 +81,14 @@ void Controller::OnRawMidiData(
    uint8_t* data,
    uint8_t data_size,
    uint8_t accepted_channel) {
-  app.Send(status, data, data_size);
+  App::Send(status, data, data_size);
 }
 
 /* static */
 uint8_t Controller::OnPot(uint8_t pot, uint8_t value) {
-  app.Send3(0xb0 | channel_, cc_[pot], value);
+  App::Send3(byteOr(0xb0, channel()), cc_data()[pot], value);
   return value;
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

@@ -22,11 +22,21 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps {
 
 class Filter {
  public:
-  Filter() { }
+  // one parameter for each MIDI channel
+  enum Parameter : uint8_t {
+    ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7,
+    ch8, ch9, cha, chb, chc, chd, che, chf,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -35,14 +45,20 @@ class Filter {
      uint8_t data_size,
      uint8_t accepted_channel);
  
-  static const AppInfo app_info_ PROGMEM;
- 
+
  private:
-  static uint8_t channel_enabled_[16];
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
+  static inline bool channel_enabled(uint8_t which) {
+    return settings[ch0 + which];
+  }
   
   DISALLOW_COPY_AND_ASSIGN(Filter);
 };
 
-} }  // namespace midipal::apps
+}  // namespace apps
+}  // namespace midipal
 
 #endif // MIDIPAL_APPS_FILTER_H_

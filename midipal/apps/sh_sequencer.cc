@@ -21,6 +21,7 @@
 
 #include "avrlib/op.h"
 #include "avrlib/string.h"
+#include "midi/midi_constants.h"
 
 #include "midi/midi.h"
 
@@ -28,29 +29,20 @@
 #include "midipal/display.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 using namespace avrlib;
 
-const uint8_t sequencer_factory_data[18] PROGMEM = {
+const uint8_t ShSequencer::factory_data[Parameter::COUNT] PROGMEM = {
   0, 0,
   0, 120, 0, 0, 12, 0, 8,
   48, 0xff, 48, 0xff, 60, 0xff, 60, 0xff,
 };
 
 /* <static> */
-uint8_t ShSequencer::running_;
-uint8_t ShSequencer::recording_;
-uint8_t ShSequencer::clk_mode_;
-uint8_t ShSequencer::bpm_;
-uint8_t ShSequencer::groove_template_;
-uint8_t ShSequencer::groove_amount_;
-uint8_t ShSequencer::clock_division_;  
-uint8_t ShSequencer::channel_;
-uint8_t ShSequencer::num_steps_;
-uint8_t ShSequencer::sequence_data_[kShSequencerNumSteps];
-uint8_t ShSequencer::slide_data_[kShSequencerNumSteps / 8 + 1];
-uint8_t ShSequencer::accent_data_[kShSequencerNumSteps / 8 + 1];
+uint8_t ShSequencer::settings[Parameter::COUNT];
+
 
 uint8_t ShSequencer::midi_clock_prescaler_;
 uint8_t ShSequencer::tick_;
@@ -66,47 +58,48 @@ const AppInfo ShSequencer::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
   &OnNoteOn, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
   &OnNoteOff, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
   OnControlChange, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
   OnPitchBend, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
   &OnClock, // void (*OnClock)();
   &OnStart, // void (*OnStart)();
   &OnContinue, // void (*OnContinue)();
   &OnStop, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
-  NULL, // void (*OnRawByte)(uint8_t);
+  nullptr, // bool (*CheckChannel)(uint8_t);
+  nullptr, // void (*OnRawByte)(uint8_t);
   &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
 
   &OnIncrement, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
   &OnRedraw, // uint8_t (*OnRedraw)();
   &SetParameter, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  9 + kShSequencerNumSteps + 2 * (kShSequencerNumSteps / 8 + 1), // settings_size
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  //9 + kNumSteps + 2 * (kNumSteps / 8 + 1),
+  Parameter::COUNT, // settings_size
   SETTINGS_SEQUENCER, // settings_offset
-  &running_, // settings_data
-  sequencer_factory_data, // factory_data
+  settings, // settings_data
+  factory_data, // factory_data
   STR_RES_SEQUENCR, // app_name
   true
 };
 
 /* static */
 void ShSequencer::OnInit() {
-  ui.AddPage(STR_RES_RUN, STR_RES_OFF, 0, 1);
-  ui.AddPage(STR_RES_REC, STR_RES_OFF, 0, 1);
-  ui.AddClockPages();
-  ui.AddPage(STR_RES_DIV, STR_RES_2_1, 0, 16);
-  ui.AddPage(STR_RES_CHN, UNIT_INDEX, 0, 15);
-  clock.Update(bpm_, groove_template_, groove_amount_);
-  SetParameter(3, bpm_);
-  clock.Start();
-  running_ = 0;
-  recording_ = 0;
+  Ui::AddPage(STR_RES_RUN, STR_RES_OFF, 0, 1);
+  Ui::AddPage(STR_RES_REC, STR_RES_OFF, 0, 1);
+  Ui::AddClockPages();
+  Ui::AddPage(STR_RES_DIV, STR_RES_2_1, 0, 16);
+  Ui::AddPage(STR_RES_CHN, UNIT_INDEX, 0, 15);
+  Clock::Update(bpm(), groove_template(), groove_amount());
+  SetParameter(bpm_, bpm());
+  Clock::Start();
+  running() = 0;
+  recording() = 0;
 }
 
 /* static */
@@ -116,64 +109,61 @@ void ShSequencer::OnRawMidiData(
    uint8_t data_size,
    uint8_t accepted_channel) {
   // Forward everything except note on for the selected channel.
-  if (status != (0x80 | channel_) && 
-      status != (0x90 | channel_)) {
-    app.Send(status, data, data_size);
+  if (status != noteOffFor(channel()) &&
+      status != noteOnFor(channel())) {
+    App::Send(status, data, data_size);
   }
 }
 
 /* static */
 void ShSequencer::SetParameter(uint8_t key, uint8_t value) {
-  if (key == 0) {
-    if (value == 1) {
+  auto param = static_cast<Parameter>(key);
+  if (param == running_) {
+    if (value) {
       Start();
     } else {
       Stop();
     }
-  }
-  if (key == 1) {
+  } else if (param == recording_) {
     Stop();
-    memset(sequence_data_, 60, sizeof(sequence_data_));
-    // XXX overflowing write!?
-    //memset(slide_data_, 0, sizeof(slide_data_) * 2);
-    // is it meant to write to accent_data_ too?
-    memset(slide_data_, 0, sizeof(slide_data_));
-    memset(accent_data_, 0, sizeof(accent_data_));
-    recording_ = 1;
+    memset(sequence_data(), 60, sequence_data_end_ - sequence_data_ + 1);
+    memset(slide_data(), 0, slide_data_end_ - slide_data_ + 1);
+    memset(accent_data(), 0, accent_data_end_ - accent_data_ + 1);
+    recording() = 1;
     rec_mode_menu_option_ = 0;
-    num_steps_ = 0;
+    num_steps() = 0;
   }
-  static_cast<uint8_t*>(&running_)[key] = value;
-  if (key < 6) {
-    clock.Update(bpm_, groove_template_, groove_amount_);
+  ParameterValue(param) = value;
+  if (param < groove_amount()) {
+    // it's a clock-related parameter
+    Clock::Update(bpm(), groove_template(), groove_amount());
   }
   midi_clock_prescaler_ = ResourcesManager::Lookup<uint8_t, uint8_t>(
-      midi_clock_tick_per_step, clock_division_);
+      midi_clock_tick_per_step, clock_division());
 }
 
 /* static */
 uint8_t ShSequencer::OnRedraw() {
-  if (recording_) {
+  if (recording()) {
     memset(line_buffer, 0, kLcdWidth);
     line_buffer[0] = static_cast<char>(0xa5);
-    UnsafeItoa(num_steps_, 2, &line_buffer[1]);
+    UnsafeItoa(num_steps(), 2, &line_buffer[1]);
     PadRight(&line_buffer[1], 2, ' ');
     line_buffer[3] = '|';
     
-    ResourcesManager::LoadStringResource(
-        STR_RES_REST + rec_mode_menu_option_,
+    ResourcesManager::LoadStringResource(STR_RES_REST + rec_mode_menu_option_,
         &line_buffer[4], 4);
     AlignRight(&line_buffer[4], 4);
-    display.Print(0, line_buffer);
+    Display::Print(0, line_buffer);
+    return 1;
   } else {
     return 0;
   }
-  return 1;
 }
 
 /* static */
 uint8_t ShSequencer::OnIncrement(int8_t increment) {
-  if (recording_) {
+  if (recording()) {
     rec_mode_menu_option_ += increment;
     if (rec_mode_menu_option_ == 0xff) {
       rec_mode_menu_option_ = 0;
@@ -181,63 +171,63 @@ uint8_t ShSequencer::OnIncrement(int8_t increment) {
     if (rec_mode_menu_option_ >= 2) {
       rec_mode_menu_option_ = 2;
     }
+    Ui::RefreshScreen();
+    return 1;
   } else {
     return 0;
   }
-  ui.RefreshScreen();
-  return 1;
 }
 
 /* static */
 uint8_t ShSequencer::OnClick() {
-  if (recording_) {
+  if (recording()) {
     switch (rec_mode_menu_option_) {
       case 0:
       case 1:
-        sequence_data_[num_steps_] = 0xff - rec_mode_menu_option_;
+        sequence_data()[num_steps_] = 0xff_u8 - rec_mode_menu_option_;
         SaveAndAdvanceStep();
-        if (num_steps_ == kShSequencerNumSteps) {
-          recording_ = 0;
+        if (num_steps() == kNumSteps) {
+          recording() = 0;
         }
         break;
       case 2:
-        recording_ = 0;
-        ui.set_page(0);  // Go back to "run" page.
+        recording() = 0;
+        Ui::set_page(0);  // Go back to "run" page.
         break;
     }
   } else {
     return 0;
   }
-  ui.RefreshScreen();
+  Ui::RefreshScreen();
   return 1;
 }
 
 /* static */
 void ShSequencer::OnStart() {
-  if (clk_mode_ != CLOCK_MODE_INTERNAL) {
+  if (clk_mode() != CLOCK_MODE_INTERNAL) {
     Start();
   }
 }
 
 /* static */
 void ShSequencer::OnStop() {
-  if (clk_mode_ != CLOCK_MODE_INTERNAL) {
+  if (clk_mode() != CLOCK_MODE_INTERNAL) {
     Stop();
   }
 }
 
 /* static */
 void ShSequencer::OnContinue() {
-  if (!running_) {
+  if (!running()) {
     Start();
   }
 }
 
 /* static */
 void ShSequencer::OnClock(uint8_t clock_source) {
-  if (clk_mode_ == clock_source && running_) {
+  if (clk_mode() == clock_source && running()) {
     if (clock_source == CLOCK_MODE_INTERNAL) {
-      app.SendNow(0xf8);
+      App::SendNow(MIDI_SYS_CLK_TICK);
     }
     Tick();
   }
@@ -245,113 +235,102 @@ void ShSequencer::OnClock(uint8_t clock_source) {
 
 /* static */
 void ShSequencer::AddSlideAccent(uint8_t is_accent) {
-  uint8_t accent_slide_index = num_steps_ >> 3;
-  uint8_t accent_slide_mask = 1 << (num_steps_ & 0x7);
+  uint8_t accent_slide_index = num_steps()/8_u8;
+  uint8_t accent_slide_mask = bitFlag(byteAnd(num_steps(), 0x7));
   if (is_accent) {
-    accent_slide_index += kShSequencerNumSteps / 8 + 1;
+    accent_slide_index += kNumSteps / 8 + 1;
   }
-  slide_data_[accent_slide_index] |= accent_slide_mask;
+  slide_data()[accent_slide_index] |= accent_slide_mask;
 }
 
 /* static */
 void ShSequencer::OnPitchBend(uint8_t channel, uint16_t value) {
-  if (channel != channel_ || !recording_) {
-    return;
-  }
-  if ((value > 8192 + 2048 || value < 8192 - 2048)) {
-    AddSlideAccent(0);
+  if (channel == ShSequencer::channel() && recording()) {
+    if ((value > 8192 + 2048 || value < 8192 - 2048)) {
+      AddSlideAccent(0);
+    }
   }
 }
 
 /* static */
-void ShSequencer::OnControlChange(
-    uint8_t channel,
-    uint8_t controller,
-    uint8_t value) {
-  if (channel != channel_ || !recording_) {
-    return;
-  }
-  if (controller == midi::kModulationWheelMsb && value > 0x40)  {
-    AddSlideAccent(1);
+void ShSequencer::OnControlChange(uint8_t channel, uint8_t controller, uint8_t value) {
+  if (channel == ShSequencer::channel() && recording()) {
+    if (controller == midi::kModulationWheelMsb && value > 0x40)  {
+      AddSlideAccent(1);
+    }
   }
 }
 
 /* static */
 void ShSequencer::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
-  if ((clk_mode_ == CLOCK_MODE_NOTE && app.NoteClock(true, channel, note)) ||
-      channel != channel_) {
+  if ((clk_mode() == CLOCK_MODE_NOTE && App::NoteClock(true, channel, note)) ||
+      channel != ShSequencer::channel()) {
     return;
   }
-  uint8_t was_running = running_;
+  uint8_t was_running = running();
   uint8_t just_started = 0;
-  if (recording_) {
-    sequence_data_[num_steps_] = note;
+  if (recording()) {
+    sequence_data()[num_steps_] = note;
     SaveAndAdvanceStep();
-    if (num_steps_ == kShSequencerNumSteps) {
-      recording_ = 0;
+    if (num_steps() == kNumSteps) {
+      recording() = 0;
     }
-  } else if (running_) {
-    if (clk_mode_ == CLOCK_MODE_INTERNAL && note == last_note_) {
-      Stop();
-    }
-  } else {
-    if (clk_mode_ == CLOCK_MODE_INTERNAL) {
-      Start();
-      root_note_ = note;
-      just_started = 1;
-    }
+  } else if (running() && clk_mode() == CLOCK_MODE_INTERNAL && note == last_note_) {
+    Stop();
+  } else if (clk_mode() == CLOCK_MODE_INTERNAL) {
+    Start();
+    root_note_ = note;
+    just_started = 1;
   }
   
   if (!was_running && !just_started) {
-    app.Send3(0x90 | channel, note, velocity);
+    App::Send3(noteOnFor(channel), note, velocity);
   }
-  if (running_ && !recording_) {
+  if (running() && !recording()) {
     last_note_ = note;
   }
 }
 
 /* static */
 void ShSequencer::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
-  if ((clk_mode_ == CLOCK_MODE_NOTE && app.NoteClock(false, channel, note)) ||
-      channel != channel_) {
+  if ((clk_mode() == CLOCK_MODE_NOTE && App::NoteClock(false, channel, note)) ||
+      channel != ShSequencer::channel()) {
     return;
   }
   
-  if (!running_) {
-    app.Send3(0x80 | channel, note, velocity);
+  if (!running()) {
+    App::Send3(noteOffFor(channel), note, velocity);
   }
 }
 
 /* static */
 void ShSequencer::Stop() {
-  if (!running_) {
-    return;
-  }
-  running_ = 0;
-  if (pending_note_ != 0xff) {
-    app.Send3(0x80 | channel_, pending_note_, 0);
-  }
-  pending_note_ = 0xff;
-  if (clk_mode_ == CLOCK_MODE_INTERNAL) {
-    app.SendNow(0xfc);
+  if (running()) {
+    running() = 0;
+    if (pending_note_ != 0xff) {
+      App::Send3(noteOffFor(channel()), pending_note_, 0);
+    }
+    pending_note_ = 0xff;
+    if (clk_mode() == CLOCK_MODE_INTERNAL) {
+      App::SendNow(MIDI_SYS_CLK_STOP);
+    }
   }
 }
 
 /* static */
 void ShSequencer::Start() {
-  if (running_) {
-    return;
+  if (!running()) {
+    if (clk_mode() == CLOCK_MODE_INTERNAL) {
+      Clock::Start();
+      App::SendNow(MIDI_SYS_CLK_START);
+    }
+    tick_ = midi_clock_prescaler_ - 1_u8;
+    root_note_ = 60;
+    last_note_ = 60;
+    running() = 1;
+    step_ = 0;
+    pending_note_ = 0xff;
   }
-  if (clk_mode_ == CLOCK_MODE_INTERNAL) {
-    clock.Start();
-    app.SendNow(0xfa);
-  }
-  tick_ = midi_clock_prescaler_ - 1;
-  root_note_ = 60;
-  last_note_ = 60;
-  running_ = 1;
-  step_ = 0;
-  pending_note_ = 0xff;
 }
 
 /* static */
@@ -359,34 +338,35 @@ void ShSequencer::Tick() {
   ++tick_;
   if (tick_ >= midi_clock_prescaler_) {
     tick_ = 0;
-    uint8_t note = sequence_data_[step_];
+    uint8_t note = sequence_data()[step_];
     if (note == 0xff) {
       // It's a rest
       if (pending_note_ != 0xff) {
-        app.Send3(0x80 | channel_, pending_note_, 0);
+        App::Send3(noteOffFor(channel()), pending_note_, 0);
       }
       pending_note_ = 0xff;
     } else if (note == 0xfe) {
       // It's a tie, do nothing.
     } else {
-      uint8_t accent_slide_index = step_ >> 3;
-      uint8_t accent_slide_mask = 1 << (step_ & 0x7);
-      uint8_t accented = accent_data_[accent_slide_index] & accent_slide_mask;
-      uint8_t slid = slide_data_[accent_slide_index] & accent_slide_mask;
-      note &= 0x7f;
-      note = Clip(static_cast<int16_t>(note) + last_note_ - root_note_, 0, 127);
+      uint8_t accent_slide_index = step_ / 8_u8;
+      uint8_t accent_slide_mask = bitFlag(byteAnd(step_, 0x7));
+      uint8_t accented = accent_data()[accent_slide_index] & accent_slide_mask;
+      uint8_t slid = slide_data()[accent_slide_index] & accent_slide_mask;
+      note = U7(note);
+      // note is promotied to int16_t for addition
+      note = Clip(note + last_note_ - root_note_, 0_u8, 127_u8);
       
       if (pending_note_ != 0xff && !slid) {
-        app.Send3(0x80 | channel_, pending_note_, 0);
+        App::Send3(noteOffFor(channel()), pending_note_, 0);
       }
-      app.Send3(0x90 | channel_, note, accented ? 127 : 64);
+      App::Send3(noteOnFor(channel()), note, accented ? 127_u8 : 64_u8);
       if (pending_note_ != 0xff && slid) {
-        app.Send3(0x80 | channel_, pending_note_, 0);
+        App::Send3(noteOffFor(channel()), pending_note_, 0);
       }
       pending_note_ = note;
     }
     ++step_;
-    if (step_ >= num_steps_) {
+    if (step_ >= num_steps()) {
       step_ = 0;
     }
   }
@@ -394,14 +374,16 @@ void ShSequencer::Tick() {
 
 /* static */
 void ShSequencer::SaveAndAdvanceStep() {
-  app.SaveSetting(9 + num_steps_);
-  if ((num_steps_ & 0x7) == 0) {
-    uint8_t offset = 9 + kShSequencerNumSteps + (num_steps_ >> 3);
-    app.SaveSetting(offset);
-    app.SaveSetting(offset + kShSequencerNumSteps / 8 + 1);
+  App::SaveSetting(sequence_data_ + num_steps());
+  if (byteAnd(num_steps(), 0x7) == 0) {
+    // save slide and accent data
+    uint8_t slide_accent_index = num_steps() / 8_u8;
+    App::SaveSetting(slide_data_ + slide_accent_index);
+    App::SaveSetting(accent_data_ + slide_accent_index);
   }
-  ++num_steps_;
-  app.SaveSetting(8);
+  ++num_steps();
+  App::SaveSetting(num_steps_);
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

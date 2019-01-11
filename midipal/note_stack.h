@@ -55,7 +55,7 @@ struct NoteEntry {
 };
 
 class NoteStack {
- public: 
+ public:
   NoteStack() { }
   static void Init() { Clear(); }
 
@@ -72,9 +72,9 @@ class NoteStack {
     }
     return pool_[current];
   }
-  const NoteEntry& played_note(uint8_t index) const {
+  static const NoteEntry& played_note(uint8_t index) {
     uint8_t current = root_ptr_;
-    index = size_ - index - 1;
+    index = size_ - index - 1_u8;
     for (uint8_t i = 0; i < index; ++i) {
       current = pool_[current].next_ptr;
     }

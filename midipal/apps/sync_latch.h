@@ -22,16 +22,27 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-enum SyncState {
-  STATE_RUNNING = 1,
-  STATE_ARMED = 2
-};
 
 class SyncLatch {
  public:
-  SyncLatch() { }
+  static constexpr uint8_t STATE_RUNNING = 1;
+  static constexpr uint8_t STATE_ARMED = 2;
+
+  enum Parameter : uint8_t {
+    num_beats_,
+    beat_division_,
+    beat_counter_,
+    step_counter_,
+    state_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawByte(uint8_t byte);
@@ -43,18 +54,30 @@ class SyncLatch {
   static uint8_t OnClick();
   static uint8_t OnRedraw();
   
-  static const AppInfo app_info_ PROGMEM;
-  
  private:
-  static uint8_t num_beats_;
-  static uint8_t beat_division_;
-  static uint8_t beat_counter_;
-  static uint8_t step_counter_;
-  static uint8_t state_;
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& num_beats() {
+    return ParameterValue(num_beats_);
+  }
+  static inline uint8_t& beat_division() {
+    return ParameterValue(beat_division_);
+  }
+  static inline uint8_t& beat_counter() {
+    return ParameterValue(beat_counter_);
+  }
+  static inline uint8_t& step_counter() {
+    return ParameterValue(step_counter_);
+  }
+  static inline uint8_t& state() {
+    return ParameterValue(state_);
+  }
   
   DISALLOW_COPY_AND_ASSIGN(SyncLatch);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_SYNC_LATCH_H_

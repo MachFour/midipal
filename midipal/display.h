@@ -15,7 +15,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Instance of the display class, configured for the Midipal project.
+// Instance of the Display class, configured for the Midipal project.
 
 #ifndef MIDIPAL_DISPLAY_H_
 #define MIDIPAL_DISPLAY_H_
@@ -36,8 +36,8 @@ typedef Hd44780Lcd<
     LcdDataBus,
     kLcdWidth,
     kLcdHeight> Lcd;
-extern Lcd lcd;
-extern BufferedDisplay<Lcd> display;
+
+typedef BufferedDisplay<Lcd> Display;
 
 extern char line_buffer[];
 

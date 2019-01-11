@@ -26,62 +26,49 @@
 #include "midipal/display.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-const uint8_t clock_source_factory_data[5] PROGMEM = {
+static const uint8_t clock_source_factory_data[ClockSource::Parameter::COUNT] PROGMEM = {
   0, 120, 0, 0, 0
 };
 
 /* static */
-uint8_t ClockSource::running_;
-
-/* static */
-uint8_t ClockSource::bpm_;
-
-/* static */
-uint8_t ClockSource::groove_template_;
-
-/* static */
-uint8_t ClockSource::groove_amount_;
-
-/* static */
-uint8_t ClockSource::continuous_;
-
+uint8_t ClockSource::settings[Parameter::COUNT];
 /* static */
 uint8_t ClockSource::num_taps_;
-
 /* static */
 uint32_t ClockSource::elapsed_time_;
 
 /* static */
 const AppInfo ClockSource::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
   &OnClock, // void (*OnClock)();
   &OnStart, // void (*OnStart)();
   &OnContinue, // void (*OnContinue)();
   &OnStop, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
+  nullptr, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  NULL, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
 
   &OnIncrement, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
-  NULL, // uint8_t (*OnRedraw)();
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnRedraw)();
   &SetParameter, // void (*SetParameter)(uint8_t, uint8_t);
-  &GetParameter, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  5, // settings_size
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_CLOCK_SOURCE, // settings_offset
-  &running_, // settings_data
+  settings, // settings_data
   clock_source_factory_data, // factory_data
   STR_RES_CLOCK, // app_name
   true
@@ -89,81 +76,84 @@ const AppInfo ClockSource::app_info_ PROGMEM = {
 
 /* static */
 void ClockSource::OnInit() {
-  ui.AddPage(STR_RES_RUN, STR_RES_OFF, 0, 1);
-  ui.AddPage(STR_RES_BPM, UNIT_INTEGER, 40, 240);
-  ui.AddPage(STR_RES_GRV, STR_RES_SWG, 0, 5);
-  ui.AddPage(STR_RES_AMT, UNIT_INTEGER, 0, 127);
-  ui.AddPage(STR_RES_CONT_, STR_RES_OFF, 0, 1);
-  ui.AddPage(STR_RES_TAP, UNIT_INTEGER, 40, 240);
-  clock.Update(bpm_, groove_template_, groove_amount_);
-  running_ = 0;
+  Ui::AddPage(STR_RES_RUN, STR_RES_OFF, 0, 1);
+  Ui::AddPage(STR_RES_BPM, UNIT_INTEGER, 40, 240);
+  Ui::AddPage(STR_RES_GRV, STR_RES_SWG, 0, 5);
+  Ui::AddPage(STR_RES_AMT, UNIT_INTEGER, 0, 127);
+  Ui::AddPage(STR_RES_CONT_, STR_RES_OFF, 0, 1);
+  Ui::AddPage(STR_RES_TAP, UNIT_INTEGER, 40, 240);
+  Clock::Update(bpm(), groove_template(), groove_amount());
+  running() = 0;
   num_taps_ = 0;
-  if (continuous_) {
-    clock.Start();
+  if (continuous()) {
+    Clock::Start();
   }
 }
 
 /* static */
 void ClockSource::OnRawByte(uint8_t byte) {
-  uint8_t is_realtime = (byte & 0xf0) == 0xf0;
-  uint8_t is_sysex = (byte == 0xf7) || (byte == 0xf0);
+  bool is_realtime = byteAnd(byte, 0xf0u) == 0xf0u;
+  bool is_sysex = (byte == 0xf7) || (byte == 0xf0);
   if (!is_realtime || is_sysex) {
-    app.SendNow(byte);
+    App::SendNow(byte);
   }
 }
 
 /* static */
 void ClockSource::SetParameter(uint8_t key, uint8_t value) {
-  if (key == 0) {
-    if (value == 1) {
-      Start();
-    } else {
-      Stop();
-    }
-  }
-  if (key == 4) {
-    if (!running_) {
-      if (value == 1) {
-        clock.Start();
+  auto param = static_cast<Parameter>(key);
+  switch (param) {
+    case running_:
+      if (value) {
+        Start();
       } else {
-        clock.Stop();
+        Stop();
       }
-    }
+      break;
+    case continuous_:
+      if (!running()) {
+        if (value) {
+          Clock::Start();
+        } else {
+          Clock::Stop();
+        }
+      }
+      break;
+    case tap_bpm_:
+      // copy to BPM too
+      ParameterValue(bpm_) = value;
+      break;
+    case bpm_:
+      // copy to tap_bpm too
+      ParameterValue(tap_bpm_) = value;
+      break;
+    default:
+      break;
   }
-  if (key == 5) {
-    key = 1;
-  }
-  (&running_)[key] = value;
-  clock.Update(bpm_, groove_template_, groove_amount_);
-}
-
-/* static */
-uint8_t ClockSource::GetParameter(uint8_t key) {
-  if (key == 5) {
-    key = 1;
-  }
-  return (&running_)[key];
+  // now the actual write
+  ParameterValue(param) = value;
+  Clock::Update(bpm(), groove_template(), groove_amount());
 }
 
 /* static */
 uint8_t ClockSource::OnClick() {
-  if (ui.page() == 5) {
-    uint32_t t = clock.value();
-    clock.Reset();
-    if (num_taps_ > 0 && t < 400000L) {
-      elapsed_time_ += t;
-      SetParameter(
-          1,
-          avrlib::Clip(18750000 * num_taps_ / elapsed_time_, 40_u8, 240_u8));
-    } else {
-      num_taps_ = 0;
-      elapsed_time_ = 0;
-    }
-    ++num_taps_;
-    return 1;
-  } else {
+  // only need this for tap BPM feature
+  if (Ui::page() != tap_bpm_) {
     return 0;
   }
+  // tap calculation: find average bpm value
+  auto t = Clock::value();
+  Clock::Reset();
+  if (num_taps_ != 0 && t < 400000L) {
+    elapsed_time_ += t;
+    auto new_bpm = avrlib::Clip(18750000 * num_taps_ / elapsed_time_, 40_u8, 240_u8);
+    SetParameter(bpm_, new_bpm);
+  } else {
+    num_taps_ = 0;
+    elapsed_time_ = 0;
+  }
+  ++num_taps_;
+  return 1;
 }
 
 /* static */
@@ -190,30 +180,31 @@ void ClockSource::OnContinue() {
 /* static */
 void ClockSource::OnClock(uint8_t clock_source) {
   if (clock_source == CLOCK_MODE_INTERNAL) {
-    app.SendNow(0xf8);
+    App::SendNow(0xf8);
   }
 }
 
 /* static */
 void ClockSource::Stop() {
-  if (running_) {
-    if (!continuous_) {
-      clock.Stop();
+  if (running()) {
+    if (!continuous()) {
+      Clock::Stop();
     }
-    app.SendNow(0xfc);
-    running_ = 0;
+    App::SendNow(0xfc);
+    running() = 0;
   }
 }
 
 /* static */
 void ClockSource::Start() {
-  if (!running_) {
-    if (!continuous_) {
-      clock.Start();
+  if (!running()) {
+    if (!continuous()) {
+      Clock::Start();
     }
-    app.SendNow(0xfa);
-    running_ = 1;
+    App::SendNow(0xfa);
+    running() = 1;
   }
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

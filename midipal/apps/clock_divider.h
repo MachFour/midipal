@@ -22,11 +22,18 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class ClockDivider {
  public:
-  ClockDivider() { }
+  enum Parameter : uint8_t {
+    divider_,
+    start_delay_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
   static void OnRawByte(uint8_t byte);
@@ -34,8 +41,15 @@ class ClockDivider {
   static const AppInfo app_info_ PROGMEM;
   
  private:
-  static uint8_t divider_;
-  static uint8_t start_delay_;
+  static uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static uint8_t& divider() {
+    return ParameterValue(divider_);
+  };
+  static uint8_t& start_delay() {
+    return ParameterValue(start_delay_);
+  };
   
   static uint8_t counter_;
   static uint8_t start_delay_counter_;
@@ -44,6 +58,7 @@ class ClockDivider {
   DISALLOW_COPY_AND_ASSIGN(ClockDivider);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_CLOCK_DIVIDER_H_

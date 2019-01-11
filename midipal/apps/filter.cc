@@ -24,9 +24,11 @@
 #include "midipal/display.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps {
 
-const uint8_t filter_factory_data[16] PROGMEM = {
+/* static */
+const uint8_t Filter::factory_data[Parameter::COUNT] PROGMEM = {
   1, 0, 0, 0, 
   0, 0, 0, 0,
   0, 0, 0, 0,
@@ -34,45 +36,45 @@ const uint8_t filter_factory_data[16] PROGMEM = {
 };
 
 /* static */
-uint8_t Filter::channel_enabled_[16];
+uint8_t Filter::settings[Parameter::COUNT];
 
 /* static */
 const AppInfo Filter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
-  NULL, // void (*OnClock)();
-  NULL, // void (*OnStart)();
-  NULL, // void (*OnContinue)();
-  NULL, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
-  NULL, // void (*OnRawByte)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnClock)();
+  nullptr, // void (*OnStart)();
+  nullptr, // void (*OnContinue)();
+  nullptr, // void (*OnStop)();
+  nullptr, // bool *(CheckChannel)(uint8_t);
+  nullptr, // void (*OnRawByte)(uint8_t);
   &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
-  NULL, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
-  NULL, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  16, // settings_size
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // uint8_t (*OnClick)();
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnRedraw)();
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_FILTER, // settings_offset
-  channel_enabled_, // settings_data
-  filter_factory_data, // factory_data
+  settings,
+  factory_data, // factory_data
   STR_RES_CHNFILTR, // app_name
   true
 };  
 
 /* static */
 void Filter::OnInit() {
-  lcd.SetCustomCharMapRes(chr_res_digits_10, 7, 1);
-  ui.AddRepeatedPage(UNIT_CHANNEL, STR_RES_OFF, 0, 1, 16);    
+  Lcd::SetCustomCharMapRes(chr_res_digits_10, 7, 1);
+  Ui::AddRepeatedPage(UNIT_CHANNEL, STR_RES_OFF, 0, 1, 16);
 }
 
 /* static */
@@ -81,15 +83,14 @@ void Filter::OnRawMidiData(
    uint8_t* data,
    uint8_t data_size,
    uint8_t accepted_channel) {
-  uint8_t type = status & 0xf0;
-  if (type == 0xf0) {
-    app.Send(status, data, data_size);
-  } else {
-    uint8_t channel = status & 0x0f;
-    if (channel_enabled_[channel]) {
-      app.Send(status, data, data_size);
-    }
+  auto isSystemCommonMessage = byteAnd(status, 0xf0) == 0xf0;
+  // note: if (isSystemCommonMessage), the channel bits
+  // don't really represent a channel
+  auto channel = byteAnd(status, 0x0f);
+  if (isSystemCommonMessage || channel_enabled(channel)) {
+    App::Send(status, data, data_size);
   }
 }
 
-} }  // namespace midipal::apps
+}  // namespace apps
+}  // namespace midipal

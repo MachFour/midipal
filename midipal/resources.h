@@ -46,12 +46,12 @@ extern const uint8_t* const waveform_table[] PROGMEM;
 
 extern const uint16_t lut_res_arpeggiator_patterns[] PROGMEM;
 extern const uint16_t lut_res_drum_patterns[] PROGMEM;
-extern const int16_t lut_res_groove_swing[] PROGMEM;
-extern const int16_t lut_res_groove_shuffle[] PROGMEM;
-extern const int16_t lut_res_groove_push[] PROGMEM;
-extern const int16_t lut_res_groove_lag[] PROGMEM;
-extern const int16_t lut_res_groove_human[] PROGMEM;
-extern const int16_t lut_res_groove_monkey[] PROGMEM;
+extern const uint16_t lut_res_groove_swing[] PROGMEM;
+extern const uint16_t lut_res_groove_shuffle[] PROGMEM;
+extern const uint16_t lut_res_groove_push[] PROGMEM;
+extern const uint16_t lut_res_groove_lag[] PROGMEM;
+extern const uint16_t lut_res_groove_human[] PROGMEM;
+extern const uint16_t lut_res_groove_monkey[] PROGMEM;
 extern const uint16_t lut_res_euclidian_patterns[] PROGMEM;
 extern const uint16_t lut_res_scale_0[] PROGMEM;
 extern const uint16_t lut_res_scale_1[] PROGMEM;

@@ -24,15 +24,15 @@
 #include "midipal/display.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 using namespace avrlib;
 
-const uint8_t monitor_factory_data[1] PROGMEM = { 0 };
+static const uint8_t monitor_factory_data[Monitor::Parameter::COUNT] PROGMEM = { 0 };
 
 /* static */
-uint8_t Monitor::monitored_channel_;
-
+uint8_t Monitor::settings[Parameter::COUNT];
 /* static */
 uint8_t Monitor::idle_counter_;
 
@@ -51,19 +51,19 @@ const AppInfo Monitor::app_info_ PROGMEM = {
   &OnStart, // void (*OnStart)();
   &OnContinue, // void (*OnContinue)();
   &OnStop, // void (*OnStop)();
-  &CheckChannel, // uint8_t (*CheckChannel)(uint8_t);
+  &CheckChannel, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  NULL, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)();
+  nullptr, // uint8_t (*OnPot)();
   &OnRedraw, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)();
-  1, // settings_size
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)();
+  Parameter::COUNT, // settings_size
   SETTINGS_MONITOR, // settings_offset
-  &monitored_channel_, // settings_data
+  settings, // settings_data
   monitor_factory_data, // factory_data
   STR_RES_MONITOR, // app_name
   true
@@ -71,25 +71,25 @@ const AppInfo Monitor::app_info_ PROGMEM = {
 
 /* static */
 void Monitor::OnInit() {
-  lcd.SetCustomCharMapRes(chr_res_digits_10, 7, 1);
-  ui.Clear();
-  ui.AddPage(STR_RES_CHN, UNIT_INTEGER_ALL, 0, 16);
+  Lcd::SetCustomCharMapRes(chr_res_digits_10, 7, 1);
+  Ui::Clear();
+  Ui::AddPage(STR_RES_CHN, UNIT_INTEGER_ALL, 0, 16);
 }
 
 /* static */
 void Monitor::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   // 01234567
   // 1 C#7 7f
-  ui.Clear();
-  ui.PrintChannel(&line_buffer[0], channel);
-  ui.PrintNote(&line_buffer[2], note);
+  Ui::Clear();
+  Ui::PrintChannel(&line_buffer[0], channel);
+  Ui::PrintNote(&line_buffer[2], note);
   if (velocity == 0xff) {
     line_buffer[6] = '-';
     line_buffer[7] = '-';
   } else {
-    ui.PrintHex(&line_buffer[6], velocity);
+    Ui::PrintHex(&line_buffer[6], velocity);
   }
-  ui.RefreshScreen();
+  Ui::RefreshScreen();
 }
 
 /* static */
@@ -98,73 +98,67 @@ void Monitor::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
 }
 
 /* static */
-void Monitor::OnNoteAftertouch(
-    uint8_t channel,
-    uint8_t note,
-    uint8_t velocity) {
-  OnNoteOn(channel, note, 0xa0 | (velocity >> 4));
+void Monitor::OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity) {
+  OnNoteOn(channel, note, byteOr(0xa0, velocity >> 4u));
 }
 
 /* static */
 void Monitor::OnAftertouch(uint8_t channel, uint8_t velocity) {
-  ui.Clear();
-  ui.PrintChannel(&line_buffer[0], channel);
+  Ui::Clear();
+  Ui::PrintChannel(&line_buffer[0], channel);
   line_buffer[2] = 'a';
   line_buffer[3] = 'f';
   line_buffer[4] = 't';
-  ui.PrintHex(&line_buffer[6], velocity);
-  ui.RefreshScreen();
+  Ui::PrintHex(&line_buffer[6], velocity);
+  Ui::RefreshScreen();
 }
 
 /* static */
-void Monitor::OnControlChange(
-    uint8_t channel,
-    uint8_t controller,
-    uint8_t value) {
+void Monitor::OnControlChange( uint8_t channel, uint8_t cc_num, uint8_t value) {
   // 01234567
   // 1 C45 67
-  if (controller >= 0x78) {
-    PrintString(channel, STR_RES_SNDOFF + controller - 0x78);
+  if (cc_num >= 0x78) {
+    PrintString(channel, U8(STR_RES_SNDOFF + cc_num - 0x78));
   } else {
-    ui.PrintChannel(&line_buffer[0], channel);
+    Ui::PrintChannel(&line_buffer[0], channel);
     line_buffer[2] = '#';
-    ui.PrintHex(&line_buffer[3], controller);
-    ui.PrintHex(&line_buffer[6], value);
-    ui.RefreshScreen();
+    Ui::PrintHex(&line_buffer[3], cc_num);
+    Ui::PrintHex(&line_buffer[6], value);
+    Ui::RefreshScreen();
   }
 }
 
 /* static */
 void Monitor::OnProgramChange(uint8_t channel, uint8_t program) {
-  ui.Clear();
-  ui.PrintChannel(&line_buffer[0], channel);
+  Ui::Clear();
+  Ui::PrintChannel(&line_buffer[0], channel);
   line_buffer[2] = 'p';
   line_buffer[3] = 'g';
   line_buffer[4] = 'm';
-  ui.PrintHex(&line_buffer[6], program);
-  ui.RefreshScreen();
+  Ui::PrintHex(&line_buffer[6], program);
+  Ui::RefreshScreen();
 }
 
 /* static */
 void Monitor::OnPitchBend(uint8_t channel, uint16_t pitch_bend) {
-  ui.Clear();
-  ui.PrintChannel(&line_buffer[0], channel);
+  Ui::Clear();
+  Ui::PrintChannel(&line_buffer[0], channel);
   line_buffer[2] = 'b';
-  ui.PrintHex(&line_buffer[4], pitch_bend >> 8);
-  ui.PrintHex(&line_buffer[6], pitch_bend & 0xff);
-  ui.RefreshScreen();
+  Ui::PrintHex(&line_buffer[4], highByte(pitch_bend));
+  Ui::PrintHex(&line_buffer[6], lowByte(pitch_bend));
+  Ui::RefreshScreen();
 }
 
 /* static */
 void Monitor::PrintString(uint8_t channel, uint8_t res_id) {
-  if (ui.editing()) {
+  if (Ui::editing()) {
     return;
   }
-  ui.Clear();
-  ui.PrintChannel(&line_buffer[0], channel);
+  Ui::Clear();
+  Ui::PrintChannel(&line_buffer[0], channel);
   ResourcesManager::LoadStringResource(res_id, &line_buffer[2], 6);
   AlignRight(&line_buffer[2], 6);
-  ui.RefreshScreen();
+  Ui::RefreshScreen();
 }
 
 /* static */
@@ -180,12 +174,12 @@ void Monitor::OnSysExByte(uint8_t sysex_byte) {
 
 /* static */
 void Monitor::OnClock(uint8_t clock_mode) {
-  if (ui.editing()) {
+  if (Ui::editing()) {
     return;
   }
   if (clock_mode == CLOCK_MODE_EXTERNAL) {
     line_buffer[1] = static_cast<char>(0xa5);
-    ui.RefreshScreen();
+    Ui::RefreshScreen();
   }
 }
 
@@ -205,9 +199,9 @@ void Monitor::OnStop() {
 }
 
 /* static */
-uint8_t Monitor::CheckChannel(uint8_t channel) {
-  return (ui.editing() == 0) && 
-      ((monitored_channel_ == 0) || (channel + 1 == monitored_channel_));
+bool Monitor::CheckChannel(uint8_t channel) {
+  // channel is 0-indexed but monitored channel is 1-indexed
+  return !Ui::editing() && ((monitored_channel() == 0) || (channel + 1 == monitored_channel()));
 }
 
 /* static */
@@ -218,19 +212,19 @@ void Monitor::OnRawByte(uint8_t byte) {
   if (byte == 0xff) {
     PrintString(0xff, STR_RES_RESET);
   }
-  app.SendNow(byte);
+  App::SendNow(byte);
 }
 
 /* static */
 uint8_t Monitor::OnClick() {
-  ui.Clear();
-  ui.RefreshScreen();
+  Ui::Clear();
+  Ui::RefreshScreen();
   return 0;
 }
 
 /* static */
 uint8_t Monitor::OnRedraw() {
-  if (!ui.editing()) {
+  if (!Ui::editing()) {
     return 1;  // Prevent the default screen redraw handler to be called.
   } else {
     return 0;
@@ -242,10 +236,11 @@ void Monitor::OnIdle() {
   if (idle_counter_ < 60) {
     ++idle_counter_;
     if (idle_counter_ == 60) {
-      ui.Clear();
-      ui.RefreshScreen();
+      Ui::Clear();
+      Ui::RefreshScreen();
     }
   }
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

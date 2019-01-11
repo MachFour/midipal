@@ -24,76 +24,66 @@
 
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
-const uint8_t settings_factory_data[5] PROGMEM = {
+static const uint8_t settings_factory_data[Settings::Parameter::COUNT] PROGMEM = {
   0, 0, 16, 84, 12,
 };
 
 /* static */
-uint8_t Settings::filter_active_sensing_;
-
-/* static */
-uint8_t Settings::remote_control_channel_;
-
-/* static */
-uint8_t Settings::note_clock_channel_;
-
-/* static */
-uint8_t Settings::note_clock_note_;
-
-/* static */
-uint8_t Settings::note_clock_ticks_;
+uint8_t Settings::settings[Parameter::COUNT] = {0};
 
 /* static */
 const AppInfo Settings::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
-  NULL, // void (*OnClock)();
-  NULL, // void (*OnStart)();
-  NULL, // void (*OnContinue)();
-  NULL, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnClock)();
+  nullptr, // void (*OnStart)();
+  nullptr, // void (*OnContinue)();
+  nullptr, // void (*OnStop)();
+  nullptr, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  NULL, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
-  NULL, // uint8_t (*OnClick)();
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // uint8_t (*OnClick)();
 #ifdef MIDIBUD_FIRMWARE
-  NULL, // uint8_t (*OnSwitch)(uint8_t);
+  nullptr, // uint8_t (*OnSwitch)(uint8_t);
 #else
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
 #endif
-  NULL, // uint8_t (*OnRedraw)();
-  NULL, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  5, // settings_size
+  nullptr, // uint8_t (*OnRedraw)();
+  nullptr, // void (*SetParameter)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_SYSTEM_SETTINGS, // settings_offset
-  &filter_active_sensing_, // settings_data
+  settings, // settings_data
   settings_factory_data, // factory_data
   STR_RES_SETTINGS, // app_name
-  true // realtime_clock_handling
-};  
+  false // realtime_clock_handling
+};
 
 /* static */
 void Settings::OnInit() {
-  ui.AddPage(STR_RES_XFE, STR_RES_LET, 0, 1);
-  ui.AddPage(STR_RES_CCC, UNIT_INTEGER, 0, 16);
-  ui.AddPage(STR_RES_CLC, UNIT_INTEGER, 1, 16);
-  ui.AddPage(STR_RES_CLN, UNIT_NOTE, 24, 108);
-  ui.AddPage(STR_RES_DIV, STR_RES_2_1, 0, 16);
+  Ui::AddPage(STR_RES_XFE, STR_RES_LET, 0, 1);
+  Ui::AddPage(STR_RES_CCC, UNIT_INTEGER, 0, 16);
+  Ui::AddPage(STR_RES_CLC, UNIT_INTEGER, 1, 16);
+  Ui::AddPage(STR_RES_CLN, UNIT_NOTE, 24, 108);
+  Ui::AddPage(STR_RES_DIV, STR_RES_2_1, 0, 16);
 }
 
 /* static */
 void Settings::OnRawByte(uint8_t byte) {
-  app.SendNow(byte);
+  App::SendNow(byte);
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

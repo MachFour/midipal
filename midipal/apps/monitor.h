@@ -22,11 +22,17 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class Monitor {
  public:
-  Monitor() { }
+  enum Parameter : uint8_t {
+    monitored_channel_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
 
@@ -34,7 +40,7 @@ class Monitor {
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnAftertouch(uint8_t channel, uint8_t velocity);
-  static void OnControlChange(uint8_t channel, uint8_t controller,
+  static void OnControlChange(uint8_t channel, uint8_t cc_num,
     uint8_t value);
   static void OnProgramChange(uint8_t channel, uint8_t program);
   static void OnPitchBend(uint8_t channel, uint16_t pitch_bend);
@@ -47,7 +53,7 @@ class Monitor {
   static void OnStop();
   static void OnRawByte(uint8_t byte);
 
-  static uint8_t CheckChannel(uint8_t channel);
+  static bool CheckChannel(uint8_t channel);
      
   static uint8_t OnRedraw();
   static uint8_t OnClick();
@@ -58,13 +64,20 @@ class Monitor {
   
  private:
   static void PrintString(uint8_t channel, uint8_t res_id);
-  
-  static uint8_t monitored_channel_;
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& monitored_channel() {
+    return ParameterValue(monitored_channel_);
+  }
+
   static uint8_t idle_counter_;
   
   DISALLOW_COPY_AND_ASSIGN(Monitor);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_MONITOR_H_

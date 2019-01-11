@@ -29,66 +29,72 @@
 #include "midipal/display.h"
 #include "midipal/ui.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 using namespace avrlib;
 
-const uint8_t generic_filter_factory_data[1] PROGMEM = { 0 };
+const uint8_t GenericFilter::factory_data[Parameter::COUNT] PROGMEM = { 0 };
+
+/* static */
+uint8_t GenericFilter::settings[Parameter::COUNT];
 
 /* static */
 Modifier GenericFilter::modifiers_[kNumModifiers];
 
 /* static */
-uint8_t GenericFilter::active_program_;
-
-/* static */
 const AppInfo GenericFilter::app_info_ PROGMEM = {
   &OnInit, // void (*OnInit)();
-  NULL, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnAftertouch)(uint8_t, uint8_t);
-  NULL, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
-  NULL, // void (*OnProgramChange)(uint8_t, uint8_t);
-  NULL, // void (*OnPitchBend)(uint8_t, uint16_t);
-  NULL, // void (*OnSysExByte)(uint8_t);
-  NULL, // void (*OnClock)();
-  NULL, // void (*OnStart)();
-  NULL, // void (*OnContinue)();
-  NULL, // void (*OnStop)();
-  NULL, // uint8_t (*CheckChannel)(uint8_t);
-  NULL, // void (*OnRawByte)(uint8_t);
+  nullptr, // void (*OnNoteOn)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteOff)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnNoteAftertouch)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnAftertouch)(uint8_t, uint8_t);
+  nullptr, // void (*OnControlChange)(uint8_t, uint8_t, uint8_t);
+  nullptr, // void (*OnProgramChange)(uint8_t, uint8_t);
+  nullptr, // void (*OnPitchBend)(uint8_t, uint16_t);
+  nullptr, // void (*OnSysExByte)(uint8_t);
+  nullptr, // void (*OnClock)();
+  nullptr, // void (*OnStart)();
+  nullptr, // void (*OnContinue)();
+  nullptr, // void (*OnStop)();
+  nullptr, // bool *(CheckChannel)(uint8_t);
+  nullptr, // void (*OnRawByte)(uint8_t);
   &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
-  NULL, // uint8_t (*OnIncrement)(int8_t);
-  NULL, // uint8_t (*OnClick)();
-  NULL, // uint8_t (*OnPot)(uint8_t, uint8_t);
-  NULL, // uint8_t (*OnRedraw)();
+  nullptr, // uint8_t (*OnIncrement)(int8_t);
+  nullptr, // uint8_t (*OnClick)();
+  nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
+  nullptr, // uint8_t (*OnRedraw)();
   &SetParameter, // void (*SetParameter)(uint8_t, uint8_t);
-  NULL, // uint8_t (*GetParameter)(uint8_t);
-  NULL, // uint8_t (*CheckPageStatus)(uint8_t);
-  1, // settings_size
+  nullptr, // uint8_t (*GetParameter)(uint8_t);
+  nullptr, // uint8_t (*CheckPageStatus)(uint8_t);
+  Parameter::COUNT, // settings_size
   SETTINGS_GENERIC_FILTER_PROGRAM, // settings_offset
-  &active_program_, // settings_data
-  generic_filter_factory_data, // factory_data
+  settings, // settings_data
+  factory_data, // factory_data
   STR_RES_USER_PRG, // app_name
   true
 };  
 
 /* static */
 void GenericFilter::OnInit() {
-  ui.AddPage(STR_RES_PRG, UNIT_INDEX, 0, 3);
-  SetParameter(0, active_program_);
+  Ui::AddPage(STR_RES_PRG, UNIT_INDEX, 0, 3);
+  SetParameter(active_program_, active_program());
+}
+
+inline void GenericFilter::loadProgram(uint8_t num) {
+  constexpr auto program_size = sizeof(modifiers_);
+  auto program_addr = SETTINGS_GENERIC_FILTER_SETTINGS + num * program_size;
+  eeprom_read_block(modifiers_, reinterpret_cast<void *>(program_addr), program_size);
 }
 
 /* static */
 void GenericFilter::SetParameter(uint8_t key, uint8_t value) {
-  active_program_ = value;
-  uint16_t address = value * sizeof(modifiers_);
-  address += SETTINGS_GENERIC_FILTER_SETTINGS;
-  eeprom_read_block(
-      &modifiers_[0],
-      (void*)(address),
-      sizeof(modifiers_));
+  auto param = static_cast<Parameter>(key);
+  ParameterValue(param) = value;
+  // right now this is always true
+  if (param == active_program_) {
+    loadProgram(value);
+  }
 }
 
 /* static */
@@ -97,13 +103,13 @@ void GenericFilter::OnRawMidiData(
    uint8_t* data,
    uint8_t data_size,
    uint8_t accepted_channel) {
-  uint8_t destroyed = 0;
-  uint8_t forwarded = 0;
+  bool destroyed = false;
+  bool forwarded = false;
   for (uint8_t i = 0; i < kNumModifiers; ++i) {
     const Modifier& modifier = modifiers_[i];
     if (modifier.accept(status, data[0], data[1])) {
-      destroyed = destroyed || modifier.destroys();
-      forwarded = forwarded || modifier.forwards();
+      destroyed |= modifier.destroys();
+      forwarded |= modifier.forwards();
     }
   }
   
@@ -112,7 +118,7 @@ void GenericFilter::OnRawMidiData(
   }
   
   if (forwarded) {
-    app.Send(status, data, data_size);
+    App::Send(status, data, data_size);
   }
   
   // The rules are now applied one by one.
@@ -127,10 +133,12 @@ void GenericFilter::OnRawMidiData(
         channel += modifier.action;
       }
       if (modifier.promotes_to_cc()) {
-        status = 0xb0 | (channel & 0x0f);
+        status = byteOr(0xb0, byteAnd(channel, 0x0f));
         data_size = 2;
       } else {
-        status = (status & 0xf0) | (channel & 0x0f);
+        auto type_bits = byteAnd(status, 0xf0);
+        auto channel_bits = byteAnd(channel, 0x0f);
+        status = byteOr(type_bits, channel_bits);
       }
       
       uint8_t new_data[2];
@@ -139,7 +147,7 @@ void GenericFilter::OnRawMidiData(
         ValueTransformation t = modifier.value_transformation[j];
         uint8_t original_value = data[t.swap_source() ? (1 - j) : j];
         int16_t value = original_value;
-        switch (t.operation & 0x0f) {
+        switch (byteAnd(t.operation, 0x0f)) {
           case VALUE_OEPRATION_ADD:
             value += t.argument[0];
             break;
@@ -149,7 +157,7 @@ void GenericFilter::OnRawMidiData(
             break;
 
           case VALUE_OPERATION_INVERT:
-            value = 127 - value;
+            value = 127_u8 - value;
             break;
 
           case VALUE_OPERATION_SET_TO:
@@ -157,9 +165,8 @@ void GenericFilter::OnRawMidiData(
             break;
           
           case VALUE_OPERATION_SET_TO_RANDOM:
-            value = Random::GetByte() & 0x7f;
+            value = U7(Random::GetByte());
             // Fall through
-
           case VALUE_OPERATION_MAP_TO_RANGE:
             if (t.argument[0] < t.argument[1]) {
               value = U8U8MulShift8(value << 1, t.argument[1] - t.argument[0]);
@@ -171,9 +178,7 @@ void GenericFilter::OnRawMidiData(
             break;
 
           case VALUE_OPERATION_ADD_RANDOM:
-            value += U8U8MulShift8(
-                Random::GetByte(),
-                t.argument[1] - t.argument[0]);
+            value += U8U8MulShift8(Random::GetByte(), t.argument[1] - t.argument[0]);
             value += t.argument[0];
             break;
         }
@@ -191,7 +196,8 @@ void GenericFilter::OnRawMidiData(
     }
   }
   
-  app.Send(status, data, data_size);
+  App::Send(status, data, data_size);
 }
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal

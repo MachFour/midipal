@@ -27,3 +27,10 @@
 
 # OS X crap
 .DS_Stor?
+.idea
+CMakeLists.txt
+build/
+cmake-build-debug/
+midipal.size
+muboot.size
+*.bak

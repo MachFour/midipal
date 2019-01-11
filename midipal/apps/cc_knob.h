@@ -22,35 +22,65 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class CcKnob {
- public:
-  CcKnob() { }
+public:
+  enum Parameter : uint8_t {
+    cc_value_,
+    channel_,
+    type_,
+    number_,
+    min_,
+    max_,
+    COUNT
+  };
+
+  // holds all the settings in an array to enable pointer arithmetic
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
-  
-  static void SetParameter(uint8_t key, uint8_t value);
+
+  static void OnRawMidiData(uint8_t status, uint8_t *data, uint8_t data_size, uint8_t accepted_channel);
+
+  // Assume that key < Parameter::COUNT
   static uint8_t GetParameter(uint8_t key);
-  
-  static const AppInfo app_info_ PROGMEM;
-  
- private:
-  static uint8_t value_;
-  static uint8_t channel_;
-  static uint8_t type_;
-  static uint8_t number_;
-  static uint8_t min_;
-  static uint8_t max_;
-  
+  static void SetParameter(uint8_t key, uint8_t value);
+
+
+
+private:
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+  static inline uint8_t& cc_value() {
+    return ParameterValue(cc_value_);
+  }
+  static inline uint8_t& channel() {
+    return ParameterValue(channel_);
+  }
+  static inline uint8_t& type() {
+    return ParameterValue(type_);
+  }
+  static inline uint8_t& number() {
+    return ParameterValue(number_);
+  }
+  static inline uint8_t& min() {
+    return ParameterValue(min_);
+  }
+  static inline uint8_t& max() {
+    return ParameterValue(max_);
+  }
+
+  static void modifyParamsForCC();
+
   DISALLOW_COPY_AND_ASSIGN(CcKnob);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_CC_KNOB_H_

@@ -22,11 +22,18 @@
 
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 class AppSelector {
  public:
-  AppSelector() { }
+
+  enum Parameter : uint8_t {
+    active_app_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
   static void OnRawByte(uint8_t byte);
@@ -36,14 +43,22 @@ class AppSelector {
   static uint8_t OnRedraw();
   
   static const AppInfo app_info_ PROGMEM;
- 
+
+  static inline uint8_t& active_app() {
+    return ParameterValue(active_app_);
+  };
+
  private:
-  static uint8_t active_app_;
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
   static uint8_t selected_item_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(AppSelector);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_APP_SELECTOR_H_

@@ -20,14 +20,16 @@
 #ifndef MIDIPAL_APPS_GENERIC_FILTER_H_
 #define MIDIPAL_APPS_GENERIC_FILTER_H_
 
+#include <avrlib/bitops.h>
 #include "midipal/app.h"
 
-namespace midipal { namespace apps {
+namespace midipal {
+namespace apps{
 
 static const uint8_t kNumModifiers = 4;
 
 enum ValueOperation {
-  VALUE_OEPRATION_NOP,
+  VALUE_OPERATION_NOP,
   VALUE_OEPRATION_ADD,
   VALUE_OPERATION_SUBTRACT,
   VALUE_OPERATION_INVERT,
@@ -47,15 +49,15 @@ struct ValueTransformation {
   int8_t argument[2];
   
   inline uint8_t preserves_zero() const {
-    return operation & 0x80;
+    return byteAnd(operation, 0x80);
   }
   
   inline uint8_t wrap() const {
-    return operation & 0x40;
+    return byteAnd(operation, 0x40);
   }
   
   inline uint8_t swap_source() const {
-    return operation & 0x20;
+    return byteAnd(operation, 0x20);
   }
 };
 
@@ -69,24 +71,33 @@ struct Modifier {
   uint8_t action;
   uint16_t delay;
   ValueTransformation value_transformation[2];
-  
-  inline uint8_t accept_channel(uint8_t channel) const {
+
+  // maps a channel into a bitmask
+  inline bool accept_channel(uint8_t channel) const {
     uint16_t channel_bit = 1;
     channel_bit <<= channel;
-    return (channel_bit & channel_bitmask) != 0;
+    return byteAnd(channel_bit, channel_bitmask);
+  }
+
+  // maps bytes with high nybble 8 -> f into a bit position
+  // e.g 0x45 -> 0x00, 0x80 -> 0x01, 0x93 -> 0x02, 0xa5 -> 0x04, 0xff -> 0x80
+  inline bool accept_message(uint8_t message) const {
+    auto type_bits = (message >> 4u);
+    // type_bits is between 0x00 and 0x0f
+    if (type_bits >= 0x08) {
+      auto type_bitmask = U8(1u << (type_bits - 0x08u));
+      return byteAnd(type_bitmask, message_type_bitmask);
+    } else { // unlikely
+      return false;
+    }
   }
   
-  inline uint8_t accept_message(uint8_t message) const {
-    uint8_t message_bit = 1 << ((message >> 4) - 8);
-    return message_bit & message_type_bitmask;
-  }
-  
-  inline uint8_t accept(uint8_t status, uint8_t data1, uint8_t data2) const {
-    if ((status & 0xf0) == 0xf0) {
+  inline bool accept(uint8_t status, uint8_t data1, uint8_t data2) const {
+    if (byteAnd(status, 0xf0) == 0xf0) {
       // For realtime messages, only test the message type.
       return accept_message(status);
     } else {
-      return accept_channel(status & 0x0f) && \
+      return accept_channel(byteAnd(status, 0x0f)) && \
           accept_message(status) && \
           data1 >= value[0].min && \
           data1 <= value[0].max && \
@@ -96,25 +107,32 @@ struct Modifier {
   }
   
   inline uint8_t destroys() const {
-    return action & 0x80;
+    return byteAnd(action, 0x80);
   }
   
   inline uint8_t forwards() const {
-    return action & 0x40;
+    return byteAnd(action, 0x40);
   }
   
   inline uint8_t promotes_to_cc() const {
-    return action & 0x20;
+    return byteAnd(action, 0x20);
   }
   
   inline uint8_t remaps_channel() const {
-    return action & 0x10;
+    return byteAnd(action, 0x10);
   }
 };
 
 class GenericFilter {
  public:
-  GenericFilter() { }
+  enum Parameter : uint8_t {
+    active_program_,
+    COUNT
+  };
+
+  static uint8_t settings[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
+  static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
   static void OnRawMidiData(
@@ -125,15 +143,25 @@ class GenericFilter {
  
   static void SetParameter(uint8_t key, uint8_t value);
 
-  static const AppInfo app_info_ PROGMEM;
- 
+
+
  private:
-  static uint8_t active_program_;
+  static inline void loadProgram(uint8_t num);
+
+  static inline uint8_t& ParameterValue(Parameter key) {
+    return settings[key];
+  }
+
+  static inline uint8_t& active_program() {
+    return ParameterValue(active_program_);
+  };
+
   static Modifier modifiers_[kNumModifiers];
   
   DISALLOW_COPY_AND_ASSIGN(GenericFilter);
 };
 
-} }  // namespace midipal::apps
+} // namespace apps
+} // namespace midipal
 
 #endif // MIDIPAL_APPS_GENERIC_FILTER_H_
