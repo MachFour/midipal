@@ -20,6 +20,7 @@
 #include "midipal/apps/chord_memory.h"
 
 #include "midi/midi.h"
+#include "midi/midi_constants.h"
 
 #include "midipal/ui.h"
 
@@ -55,7 +56,7 @@ const AppInfo ChordMemory::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -77,13 +78,9 @@ void ChordMemory::OnInit() {
 }
 
 /* static */
-void ChordMemory::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void ChordMemory::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   uint8_t type = byteAnd(status, 0xf0);
-  if (type != 0x80 && type != 0x90 && type != 0xa0) {
+  if (type != MIDI_NOTE_OFF && type != MIDI_NOTE_ON && type != MIDI_POLY_AFTERTOUCH) {
     App::Send(status, data, data_size);
   }
 }
@@ -128,7 +125,7 @@ inline bool ChordMemory::isActiveChannel(uint8_t channel) {
 /* static */
 void ChordMemory::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   if (!isActiveChannel(channel)) {
-    App::Send3(byteOr(0x90, channel), note, velocity);
+    App::Send3(noteOnFor(channel), note, velocity);
   } else {
     // Record mode.
     if (Ui::editing()) {
@@ -141,9 +138,9 @@ void ChordMemory::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
         }
         num_notes() = kMaxChordNotes - 1;
       }
-      App::Send3(byteOr(0x90, channel), note, velocity);
+      App::Send3(noteOnFor(channel), note, velocity);
     } else {
-      PlayChord(0x90, channel, note, velocity);
+      PlayChord(MIDI_NOTE_ON, channel, note, velocity);
     }
   }
 }
@@ -151,18 +148,18 @@ void ChordMemory::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
 /* static */
 void ChordMemory::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
   if (!isActiveChannel(channel) || Ui::editing()) {
-    App::Send3(byteOr(0x80, channel), note, velocity);
+    App::Send3(noteOffFor(channel), note, velocity);
   } else {
-    PlayChord(0x80, channel, note, velocity);
+    PlayChord(MIDI_NOTE_OFF, channel, note, velocity);
   }
 }
 
 /* static */
 void ChordMemory::OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity) {
   if (!isActiveChannel(channel) || Ui::editing()) {
-    App::Send3(byteOr(0xa0, channel), note, velocity);
+    App::Send3(polyAftertouchFor(channel), note, velocity);
   } else {
-    PlayChord(0xa0, channel, note, velocity);
+    PlayChord(MIDI_POLY_AFTERTOUCH, channel, note, velocity);
   }
 }
 

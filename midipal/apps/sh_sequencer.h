@@ -40,12 +40,14 @@ public:
     groove_amount_,
     clock_division_,
     channel_,
-    num_steps_,
+    recorded_steps_,
     sequence_data_,
     sequence_data_end_ = (sequence_data_ + kNumSteps) - 1,
     slide_data_,
+    /* ceil(kNumSteps/8) - 1*/
     slide_data_end_ = (slide_data_ + kNumSteps / 8 + 1) - 1,
     accent_data_,
+    /* ceil(kNumSteps/8) - 1*/
     accent_data_end_ = (accent_data_ + kNumSteps / 8 + 1) - 1,
     COUNT
   };
@@ -55,11 +57,7 @@ public:
   static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
   static void OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   
@@ -83,7 +81,7 @@ public:
   static void Start();
   static void Tick();
   static void SaveAndAdvanceStep();
-  static void AddSlideAccent(uint8_t is_accent);
+  static void RecordSlideOrAccent(uint8_t *data_ptr);
 
   static uint8_t& ParameterValue(Parameter key) {
     return settings[key];
@@ -112,8 +110,8 @@ public:
   static uint8_t& channel() {
     return ParameterValue(channel_);
   }
-  static uint8_t& num_steps() {
-    return ParameterValue(num_steps_);
+  static uint8_t& recorded_steps() {
+    return ParameterValue(recorded_steps_);
   }
   static uint8_t* sequence_data() {
     return &settings[sequence_data_];
@@ -127,7 +125,7 @@ public:
   
   static uint8_t midi_clock_prescaler_;
   static uint8_t tick_;
-  static uint8_t step_;
+  static uint8_t playback_step_;
   static uint8_t root_note_;
   static uint8_t last_note_;
   static uint8_t rec_mode_menu_option_;

@@ -53,7 +53,7 @@ const AppInfo Monitor::app_info_ PROGMEM = {
   &OnStop, // void (*OnStop)();
   &CheckChannel, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)();

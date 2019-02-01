@@ -107,8 +107,8 @@ void Init() {
   LedOut::set_mode(DIGITAL_OUTPUT);
   LedIn::set_mode(DIGITAL_OUTPUT);
   
-  note_stack.Init();
-  event_scheduler.Init();
+  NoteStack::Init();
+  EventScheduler::Init();
   
   // Boot the settings app.
   App::Launch(App::num_apps() - 1_u8);
@@ -132,7 +132,7 @@ void Init() {
   
   // Configure the timers.
   Timer<1>::set_prescaler(1);
-  Timer<1>::set_mode(0, bitFlag(WGM12), 3);
+  Timer<1>::set_mode(0, bitFlag8(WGM12), 3);
   PwmChannel1A::set_frequency(6510);
   Timer<1>::StartCompare();
   

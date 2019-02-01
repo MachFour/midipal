@@ -197,4 +197,5 @@ int main(void) {
     FlashLedsOk();
   }
   main_entry_point();
+  return 0;
 }

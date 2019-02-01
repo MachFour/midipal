@@ -56,7 +56,7 @@ const AppInfo Randomizer::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -91,11 +91,7 @@ inline bool shouldForwardData(uint8_t status) {
 }
 
 /* static */
-void Randomizer::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Randomizer::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   if (shouldForwardData(status)) {
     App::Send(status, data, data_size);
   }

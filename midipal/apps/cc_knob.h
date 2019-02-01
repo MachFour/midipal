@@ -44,7 +44,7 @@ public:
 
   static void OnInit();
 
-  static void OnRawMidiData(uint8_t status, uint8_t *data, uint8_t data_size, uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t *data, uint8_t data_size);
 
   // Assume that key < Parameter::COUNT
   static uint8_t GetParameter(uint8_t key);

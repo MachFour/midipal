@@ -44,11 +44,7 @@ class Tanpura {
   static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
   static void OnNoteOn(uint8_t, uint8_t, uint8_t);
   static void OnContinue();
   static void OnStart();

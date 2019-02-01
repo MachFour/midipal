@@ -17,13 +17,12 @@
 //
 // Global clock.
 
+#include <avrlib/bitops.h>
 #include "midipal/clock.h"
 
 #include "midipal/resources.h"
 
 namespace midipal {
-
-Clock clock;
 
 /* <static> */
 bool Clock::running_;
@@ -34,38 +33,35 @@ uint8_t Clock::tick_count_;
 uint8_t Clock::step_count_;
 /* </static> */
 
+// TODO document what this number means?
+static constexpr uint32_t clock_constant = 781250L;
+
+static inline uint16_t calculate_swing(int32_t base_tick_duration,
+      uint8_t groove_template, uint8_t groove_amount, uint8_t pattern_index) {
+  int32_t swing_direction = ResourcesManager::Lookup<int16_t, uint8_t>(
+        LUT_RES_GROOVE_SWING + groove_template, pattern_index);
+  swing_direction *= base_tick_duration;
+  swing_direction *= groove_amount;
+  return U16(static_cast<uint32_t>(swing_direction) >> 16u);
+}
+
 /* static */
-void Clock::Update(
-    uint16_t bpm,
-    uint8_t bpm_tenth,
-    uint8_t groove_template,
-    uint8_t groove_amount) {
-  int32_t base_tick_duration = 7812500 / \
-      (static_cast<uint32_t>(bpm) * 10 + bpm_tenth) - 1;
+void Clock::Update(uint16_t bpm, uint8_t groove_template, uint8_t groove_amount, uint8_t bpm_10th) {
+  auto bpm_times_10 = static_cast<uint32_t>(bpm) * 10 + bpm_10th;
+  int32_t base_tick_duration = clock_constant*10/bpm_times_10 - 1;
   for (uint8_t i = 0; i < kNumStepsInGroovePattern; ++i) {
-    int32_t swing_direction = ResourcesManager::Lookup<int16_t, uint8_t>(
-          LUT_RES_GROOVE_SWING + groove_template, i);
-    swing_direction *= base_tick_duration;
-    swing_direction *= groove_amount;
-    intervals_[i] = base_tick_duration + (swing_direction >> 16);
+    auto swing = calculate_swing(base_tick_duration, groove_template, groove_amount, i);
+    intervals_[i] = U16(base_tick_duration + swing);
   }
 }
 
 /* static */
-void Clock::UpdateFractional(
-    uint16_t bpm,
-    uint8_t multiplier,
-    uint8_t divider,
-    uint8_t groove_template,
-    uint8_t groove_amount) {
-  int32_t base_tick_duration = (781250L * divider) / \
-      (static_cast<uint32_t>(bpm) * multiplier) - 1;
+void Clock::UpdateFractional(uint16_t bpm, uint8_t multiplier, uint8_t divider, uint8_t groove_template, uint8_t groove_amount) {
+  auto bpm_uint32 = static_cast<uint32_t>(bpm);
+  int32_t base_tick_duration = (clock_constant * divider) / (bpm_uint32 * multiplier) - 1;
   for (uint8_t i = 0; i < kNumStepsInGroovePattern; ++i) {
-    int32_t swing_direction = ResourcesManager::Lookup<int16_t, uint8_t>(
-          LUT_RES_GROOVE_SWING + groove_template, i);
-    swing_direction *= base_tick_duration;
-    swing_direction *= groove_amount;
-    intervals_[i] = base_tick_duration + (swing_direction >> 16);
+    auto swing = calculate_swing(base_tick_duration, groove_template, groove_amount, i);
+    intervals_[i] = U16(base_tick_duration + swing);
   }
 }
 

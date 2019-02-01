@@ -59,7 +59,7 @@ const AppInfo GenericFilter::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -98,11 +98,7 @@ void GenericFilter::SetParameter(uint8_t key, uint8_t value) {
 }
 
 /* static */
-void GenericFilter::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void GenericFilter::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   bool destroyed = false;
   bool forwarded = false;
   for (uint8_t i = 0; i < kNumModifiers; ++i) {

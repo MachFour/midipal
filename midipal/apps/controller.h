@@ -41,11 +41,7 @@ class Controller {
   static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
 
   static uint8_t OnPot(uint8_t pot, uint8_t value);
 

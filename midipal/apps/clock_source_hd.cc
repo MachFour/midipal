@@ -62,7 +62,7 @@ const AppInfo ClockSourceHD::app_info_ PROGMEM = {
   &OnStop, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
 
   &OnIncrement, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
@@ -87,7 +87,7 @@ void ClockSourceHD::OnInit() {
   // Ui::AddPage(STR_RES_GRV, STR_RES_SWG, 0, 5);
   // Ui::AddPage(STR_RES_AMT, UNIT_INTEGER, 0, 127);
   // Ui::AddPage(STR_RES_TAP, UNIT_INTEGER, 40, 240);
-  Clock::Update(bpm(), bpm_10th(), groove_template(), groove_amount());
+    Clock::Update(bpm(), groove_template(), groove_amount(), bpm_10th());
   running() = 0;
   num_taps_ = 0;
 }
@@ -117,7 +117,7 @@ void ClockSourceHD::SetParameter(uint8_t key, uint8_t value) {
     ParameterValue(tap_bpm_) = value;
   }
   ParameterValue(param) = value;
-  clock.Update(bpm(), bpm_10th(), groove_template(), groove_amount());
+    Clock::Update(bpm(), groove_template(), groove_amount(), bpm_10th());
 }
 
 
@@ -176,7 +176,7 @@ uint8_t ClockSourceHD::OnIncrement(int8_t increment) {
       bpm_10th() = 0;
     }
     //update the clock
-    clock.Update(bpm(), bpm_10th(), groove_template(), groove_amount());
+    Clock::Update(bpm(), groove_template(), groove_amount(), bpm_10th());
     return 1;
   } else {
     return 0;

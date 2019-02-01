@@ -40,11 +40,7 @@ class ChordMemory {
   static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
   static void OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteAftertouch(uint8_t channel, uint8_t note, uint8_t velocity);
@@ -53,11 +49,7 @@ class ChordMemory {
   static const AppInfo app_info_ PROGMEM;
   
  private:
-  static void PlayChord(
-      uint8_t type,
-      uint8_t channel,
-      uint8_t note,
-      uint8_t velocity);
+  static void PlayChord(uint8_t type, uint8_t channel, uint8_t note, uint8_t velocity);
 
   static inline uint8_t& ParameterValue(Parameter key) {
     return settings[key];

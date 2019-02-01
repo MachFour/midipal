@@ -22,19 +22,19 @@
 #include <string.h>
 
 namespace midipal {
-  
+
 /* static */
 uint8_t EventScheduler::size_;
 
 /* static */
-SchedulerEntry EventScheduler::entries_[kEventSchedulerSize];
+EventScheduler::Entry EventScheduler::entries_[kEventSchedulerSize];
 
 /* static */
 uint8_t EventScheduler::root_ptr_;
 
 /* static */
 void EventScheduler::Init() {
-  memset(entries_, kFreeSlot, kEventSchedulerSize * sizeof(SchedulerEntry));
+  memset(entries_, kFreeSlot, kEventSchedulerSize * sizeof(Entry));
   root_ptr_ = 0;
   size_ = 0;
 }
@@ -70,11 +70,7 @@ uint8_t EventScheduler::Remove(uint8_t note, uint8_t velocity) {
 }
 
 /* static */
-void EventScheduler::Schedule(
-    uint8_t note,
-    uint8_t velocity,
-    uint8_t when,
-    uint8_t tag) {
+void EventScheduler::Schedule(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
   // Locate a free entry in the list.
   uint8_t free_slot = 0;
   for (uint8_t i = 1; i < kEventSchedulerSize; ++i) {
@@ -106,8 +102,5 @@ void EventScheduler::Schedule(
     entries_[insert_position].next = free_slot;
   }
 }
-
-/* extern */
-EventScheduler event_scheduler;
 
 }  // namespace midipal

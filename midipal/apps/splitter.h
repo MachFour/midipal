@@ -40,11 +40,7 @@ class Splitter {
   static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
 
  private:
   static inline uint8_t& ParameterValue(Parameter key) {

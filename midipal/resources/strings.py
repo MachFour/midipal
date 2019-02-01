@@ -1,4 +1,4 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3
 #
 # Copyright 2011 Olivier Gillet.
 #
@@ -46,7 +46,7 @@ settings
 notenuke
 sysxdump
 !reset!
-\xa5 v1.4 \xa5
+\xa5v1.4.1\xa5
 
 sndOff
 rstCtr

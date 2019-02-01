@@ -77,7 +77,7 @@ struct MidiDevice {
 
   static uint8_t CheckChannel(uint8_t channel) { return 1; }
   static void RawByte(uint8_t byte) { }
-  static void RawMidiData(uint8_t status, uint8_t* data, uint8_t data_size, uint8_t accepted_channel) { }
+  static void RawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) { }
 };
 
 template<typename Device>
@@ -175,11 +175,11 @@ void MidiStreamParser<Device>::MessageReceived(uint8_t status) {
   // If this is a channel-specific message, check first that the receiver is
   // tuned to this channel.
   if (hi != 0xf0 && !Device::CheckChannel(lo)) {
-    Device::RawMidiData(status, data_, data_size_, 0);
+    Device::RawMidiData(status, data_, data_size_);
     return;
   }
   if (status != 0xf0 && status != 0xf7) {
-    Device::RawMidiData(status, data_, data_size_, 1);
+    Device::RawMidiData(status, data_, data_size_);
   }
   switch (hi) {
     case 0x80:

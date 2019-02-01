@@ -1,4 +1,4 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3
 #
 # Copyright 2009 Olivier Gillet.
 #
@@ -136,6 +136,7 @@ Groove templates
 def ConvertGrooveTemplate(values):
   # Center
   values = numpy.array(values)
+  values = values.astype(float)
   values -= values.mean()
   # Scale
   scale = numpy.abs(values).max() / 127.0
@@ -180,7 +181,7 @@ def EuclidianPattern(k, n):
   pattern = [[1]] * k + [[0]] * (n - k)
   while k:
     cut = min(k, len(pattern) - k)
-    k, pattern = cut, [pattern[i] + pattern[k + i] for i in xrange(cut)] + \
+    k, pattern = cut, [pattern[i] + pattern[k + i] for i in range(cut)] + \
         pattern[cut:k] + pattern[k + cut:]
   return pattern
   
@@ -234,7 +235,7 @@ unprocessed_scales = [
 for index, unprocessed_scale in enumerate(unprocessed_scales):
   unprocessed_scale = numpy.array(unprocessed_scale)
   scale = numpy.arange(0, 12)
-  for i in xrange(12):
+  for i in range(12):
     scale[i] = unprocessed_scale[numpy.argmin(numpy.abs(unprocessed_scale - i))]
   lookup_tables.append(('scale_%d' % index, scale))
 

@@ -60,7 +60,7 @@ const AppInfo Dispatcher::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -101,11 +101,7 @@ uint8_t Dispatcher::map_channel(uint8_t index) {
 }
 
 /* static */
-void Dispatcher::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Dispatcher::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   uint8_t type = byteAnd(status, 0xf0);
   uint8_t channel = byteAnd(status, 0x0f);
   if (type == 0xf0 || channel != input_channel()) {

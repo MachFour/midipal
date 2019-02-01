@@ -20,6 +20,7 @@
 #include "midipal/app.h"
 
 #include <avr/eeprom.h>
+#include <midi/midi_constants.h>
 
 #include "avrlib/serial.h"
 
@@ -104,7 +105,7 @@ static const AppInfo* registry[] = {
   &apps::ShSequencer::app_info_,
 #else
   &apps::Sequencer::app_info_,
-#endif  // USE_SH_SEQUENCER
+#endif
   &apps::Lfo::app_info_,
   &apps::Tanpura::app_info_,
   &apps::GenericFilter::app_info_,
@@ -192,32 +193,32 @@ void App::FlushOutputBuffer(uint8_t requested_size) {
 
 /* static */
 void App::SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
-  event_scheduler.Schedule(note, velocity, when, tag);
+  EventScheduler::Schedule(note, velocity, when, tag);
 }
 
 /* static */
 void App::SendScheduledNotes(uint8_t channel) {
-  uint8_t current = event_scheduler.root();
+  uint8_t current = EventScheduler::root();
   while (current) {
-    const SchedulerEntry& entry = event_scheduler.entry(current);
+    const EventScheduler::Entry& entry = EventScheduler::entry(current);
     if (entry.when) {
       break;
     }
     if (entry.note != kZombieSlot) {
       if (entry.velocity == 0) {
-        Send3(byteOr(channel, 0x80), entry.note, 0);
+        Send3(noteOffFor(channel), entry.note, 0);
       } else {
-        Send3(byteOr(channel, 0x90), entry.note, entry.velocity);
+        Send3(noteOnFor(channel), entry.note, entry.velocity);
       }
     }
     current = entry.next;
   }
-  event_scheduler.Tick();
+  EventScheduler::Tick();
 }
 
 /* static */
 void App::FlushQueue(uint8_t channel) {
-  while (event_scheduler.size()) {
+  while (EventScheduler::size()) {
     SendScheduledNotes(channel);
   }
 }

@@ -27,8 +27,17 @@ namespace apps{
 
 class Sequencer {
 private:
-  static constexpr uint8_t kNumBytesPerStep = 4;
   static constexpr uint8_t kMaxSteps = 32;
+  static constexpr uint8_t kDefaultVelocity = 0x64;
+
+  // meaning of data stored at each offset in the sequence data, per step
+  enum StepDataType : uint8_t {
+    NOTE,
+    DURATION,
+    VELOCITY,
+    CC,
+    BYTES_PER_STEP
+  };
 
  public:
   enum Parameter : uint16_t {
@@ -46,21 +55,16 @@ private:
     cc_track_,
     num_steps_,
     sequence_data_,
-    // XXX this may not fit into uint8_t
-    sequence_data_end_ = sequence_data_ + kMaxSteps * kNumBytesPerStep,
-    COUNT = sequence_data_end_
+    sequence_data_end_ = sequence_data_ + kMaxSteps * BYTES_PER_STEP - 1,
+    COUNT
   };
 
   static uint8_t settings[Parameter::COUNT];
-  static const uint8_t factory_data[Parameter::COUNT];
+  static const uint8_t factory_data[Parameter::COUNT] PROGMEM;
   static const AppInfo app_info_ PROGMEM;
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
   static void OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   
@@ -77,6 +81,9 @@ private:
   static void Stop();
   static void Start();
   static void Tick();
+  static bool usingInternalClock() {
+    return clk_mode() == CLOCK_MODE_INTERNAL;
+  }
 
   static inline uint8_t& ParameterValue(Parameter key) {
     return settings[key];
@@ -120,13 +127,16 @@ private:
   static inline uint8_t& num_steps() {
     return ParameterValue(num_steps_);
   }
-  static inline uint8_t* sequence_step_data(uint8_t step) {
-    return &settings[sequence_data_ + step*kNumBytesPerStep];
+  static inline uint8_t* step_data(uint8_t step) {
+    return &settings[sequence_data_ + step*BYTES_PER_STEP];
+  }
+  static inline uint8_t* sequence_data() {
+    return &settings[sequence_data_];
   }
 
   static uint8_t midi_clock_prescaler_;
   static uint8_t tick_;
-  static uint8_t step_;
+  static uint8_t playback_step_;
   static uint8_t root_note_;
   static uint8_t last_note_;
   

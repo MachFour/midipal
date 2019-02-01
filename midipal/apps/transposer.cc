@@ -53,7 +53,7 @@ const AppInfo Transposer::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -84,11 +84,7 @@ uint8_t Transposer::transposedNote(uint8_t note) {
 }
 
 /* static */
-void Transposer::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Transposer::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   const auto type = byteAnd(status, 0xf0);
   const auto channel = byteAnd(status, 0x0f);
   bool is_note = type == MIDI_NOTE_OFF || type == MIDI_NOTE_ON || type == MIDI_POLY_AFTERTOUCH;

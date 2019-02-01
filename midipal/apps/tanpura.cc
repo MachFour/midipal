@@ -62,7 +62,7 @@ const AppInfo Tanpura::app_info_ PROGMEM = {
   &OnStop, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -95,11 +95,7 @@ void Tanpura::OnInit() {
 }
 
 /* static */
-void Tanpura::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Tanpura::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   App::Send(status, data, data_size);
 }
 
@@ -185,7 +181,7 @@ void Tanpura::Stop() {
 void Tanpura::Start() {
   if (!running()) {
     if (clk_mode() == CLOCK_MODE_INTERNAL) {
-      clock.Start();
+      Clock::Start();
       App::SendNow(MIDI_SYS_CLK_START);
     }
     tick_ = midi_clock_prescaler_ - 1_u8;

@@ -203,10 +203,10 @@ static const char str_res_whl[] PROGMEM = "whl";
 static const char str_res_key[] PROGMEM = "key";
 static const char str_res__[] PROGMEM = "";
 static const char str_res_stp[] PROGMEM = "stp";
-static const char str_res_1[] PROGMEM = "";
-static const char str_res_2[] PROGMEM = "";
-static const char str_res_3[] PROGMEM = "";
-static const char str_res_4[] PROGMEM = "";
+static const char str_res_1[] PROGMEM = "\x01";
+static const char str_res_2[] PROGMEM = "\x02";
+static const char str_res_3[] PROGMEM = "\x03";
+static const char str_res_4[] PROGMEM = "\x04";
 static const char str_res_am1[] PROGMEM = "am1";
 static const char str_res_am2[] PROGMEM = "am2";
 static const char str_res_am3[] PROGMEM = "am3";
@@ -252,6 +252,7 @@ static const char str_res_sa[] PROGMEM = "sa";
 static const char str_res_res[] PROGMEM = "res";
 static const char str_res_fre[] PROGMEM = "fre";
 static const char str_res_prg[] PROGMEM = "prg";
+static const char str_res_shseq[] PROGMEM = "sh-seq";
 
 
 const char* const string_table[] PROGMEM = {
@@ -490,6 +491,7 @@ const char* const string_table[] PROGMEM = {
   str_res_not,
   str_res_chd,
   str_res_prg,
+  str_res_shseq
 };
 
 const uint16_t lut_res_arpeggiator_patterns[] PROGMEM = {

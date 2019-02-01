@@ -31,14 +31,11 @@ namespace midipal {
 using namespace avrlib;
 
 /* <static> */
-RotaryEncoder<EncoderALine, EncoderBLine, EncoderClickLine> Ui::encoder_;
-PotScanner<8, 0, 8, 7> Ui::pots_;
-EventQueue<32> Ui::queue_;
-PageDefinition Ui::pages_[48];
-uint8_t Ui::num_declared_pages_;
+PageDefinition Ui::page_info_[48];
+uint8_t Ui::num_stored_page_defs_;
 uint8_t Ui::num_pages_;
-uint8_t Ui::page_;
-uint8_t Ui::stride_;
+uint8_t Ui::current_page_;
+uint8_t Ui::repeated_page_groups_;
 uint8_t Ui::pot_value_[8];
 bool Ui::editing_;
 uint8_t Ui::read_pots_;
@@ -50,31 +47,36 @@ Ui ui;
 
 /* static */
 void Ui::Init() {
-  encoder_.Init();
-  pots_.Init();
+  Encoder::Init();
+  Pots::Init();
   Lcd::Init();
   Display::Init();
   read_pots_ = 0;
-  num_declared_pages_ = 0;
+  num_stored_page_defs_ = 0;
   num_pages_ = 0;
-  stride_ = 0;
-  page_ = 0;
+  repeated_page_groups_ = 0;
+  current_page_ = 0;
   editing_ = false;
   encoder_hold_time_ = 0;
 }
 
 /* static */
-void Ui::AddPage(
-    uint8_t key_res_id,
-    uint8_t value_res_id,
-    uint8_t min,
-    uint8_t max) {
-  pages_[num_declared_pages_].key_res_id = key_res_id;
-  pages_[num_declared_pages_].value_res_id = value_res_id;
-  pages_[num_declared_pages_].min = min;
-  pages_[num_declared_pages_].max = max;
-  ++num_declared_pages_;
-  ++num_pages_;
+void Ui::AddPage(uint8_t key_res_id, uint8_t value_res_id, uint8_t min, uint8_t max, uint8_t repeats) {
+  if (repeats > 0) {
+    auto new_index = num_stored_page_defs_;
+    page_info_[new_index].key_res_id = key_res_id;
+    page_info_[new_index].value_res_id = value_res_id;
+    page_info_[new_index].min = min;
+    page_info_[new_index].max = max;
+    ++num_stored_page_defs_;
+    num_pages_ += repeats;
+    if (repeats > 1) {
+      // instead of storing a whole new page definition for each repeat
+      // just record how many sets of repeated pages there are. Then we
+      // can just jump between them
+      ++repeated_page_groups_;
+    }
+  }
 }
 
 /* static */
@@ -86,154 +88,139 @@ void Ui::AddClockPages() {
 }
 
 /* static */
-void Ui::AddRepeatedPage(
-    uint8_t key_res_id,
-    uint8_t value_res_id,
-    uint8_t min,
-    uint8_t max,
-    uint8_t num_repetitions) {
-  AddPage(key_res_id, value_res_id, min, max);
-  num_pages_ += (num_repetitions - 1);
-  ++stride_;
-}
-
-/* static */
 void Ui::Poll() {
-  int8_t increment = encoder_.Read();
+  int8_t increment = Encoder::Read();
   if (increment != 0) {
-    queue_.AddEvent(CONTROL_ENCODER, 0, increment);
+    Queue::AddEvent(CONTROL_ENCODER, 0, increment);
   }
-  if (encoder_.immediate_value() == 0x00) {
+  if (Encoder::immediate_value() == 0x00) {
     ++encoder_hold_time_;
     if (encoder_hold_time_ > 800) {
-      queue_.AddEvent(CONTROL_ENCODER_CLICK, 0, 0xff);
+      Queue::AddEvent(CONTROL_ENCODER_CLICK, 0, 0xff);
     }
   }
-  if (encoder_.clicked()) {
+  if (Encoder::clicked()) {
     // Do not enqueue a click event when the encoder is released after a long
     // press.
     if (encoder_hold_time_ <= 800) {
-      queue_.AddEvent(CONTROL_ENCODER_CLICK, 0, 1);
+      Queue::AddEvent(CONTROL_ENCODER_CLICK, 0, 1);
     }
     encoder_hold_time_ = 0;
   }
   if (read_pots_) {
-    pots_.Read();
-    uint8_t index = pots_.last_read();
-    uint8_t value = pots_.value(index);
+    Pots::Read();
+    uint8_t index = Pots::last_read();
+    uint8_t value = U8(Pots::value(index));
     if (value != pot_value_[index]) {
       pot_value_[index] = value;
-      queue_.AddEvent(CONTROL_POT, index, value);
+      Queue::AddEvent(CONTROL_POT, index, value);
     }
   }
   Lcd::Tick();
 }
 
-/* static */
-uint8_t Ui::page_index() {
-  uint8_t p = page_;
-  uint8_t index = 0;
-  while (p >= num_declared_pages_) {
-    p -= stride_;
-    ++index;
+/* We increment the page until either we reach a good page,
+ * in which case set the current page to that one, or we reach the
+ * limit, without seeing a good one, in which case don't scroll
+ */
+void Ui::scrollPage(bool forward) {
+  const uint8_t limit = forward ? max_page_index() : 0_u8;
+  const uint8_t increment = U8(forward ? 1 : -1);
+  uint8_t newPage = page();
+
+  while (newPage != limit) {
+    newPage += increment;
+    if (App::CheckPageStatus(newPage) == PAGE_GOOD) {
+      // found a page to jump to
+      set_page(newPage);
+      break;
+    }
   }
-  return index;
+  // else there were no more valid pages before the limit
+  // so don't do anything
+}
+
+void Ui::increment_parameter(int8_t inc, uint8_t page) {
+    auto page_def = page_definition(page);
+    if (page_def.value_res_id == UNIT_SIGNED_INTEGER) {
+      auto old_val = S8(App::GetParameter(page));
+      auto min = S8(page_def.min);
+      auto max = S8(page_def.max);
+      auto new_val = S8(Clip(old_val + inc, min, max));
+      App::SetParameter(page, U8(new_val));
+    } else { // UNSIGNED INTEGER
+      auto old_val = App::GetParameter(page);
+      auto min = page_def.min;
+      auto max = page_def.max;
+      auto new_val = U8(Clip(old_val + inc, min, max));
+      App::SetParameter(page, new_val);
+    }
+}
+
+void Ui::handle_encoder_click(uint8_t value, uint8_t page) {
+  if (value == 1) {
+    if (!App::OnClick()) {
+      const auto& page_def = page_definition(page);
+      if (page_def.value_res_id == STR_RES_OFF) {
+        App::SetParameter(page, App::GetParameter(page) ? 0_u8 : 1_u8);
+        App::SaveSetting(page);
+      } else {
+        editing_ = !editing();
+        if (!editing()) {
+          // Left the editing mode, save settings.
+          App::SaveSetting(page);
+        }
+      }
+    }
+  } else {
+    App::Launch(0);
+  }
 }
 
 /* static */
 void Ui::DoEvents() {
-  uint8_t redraw = 0;
-  while (queue_.available()) {
-    queue_.Touch();
-    
-    uint8_t p = page_;
-    while (p >= num_declared_pages_ && num_declared_pages_ && stride_) {
-      p -= stride_;
-    }
-    const PageDefinition& page_def = pages_[p];
-    
-    redraw = 1;
-    Event e = queue_.PullEvent();
-    if (e.control_type == CONTROL_ENCODER) {
-      // Internal handling of the encoder.
-      if (!App::OnIncrement(e.value)) {
-        if (editing_) {
-          auto increment = S8(e.value);
-          if (page_def.value_res_id == UNIT_SIGNED_INTEGER) {
-            auto old_val = S8(App::GetParameter(page_));
-            auto min = S8(page_def.min);
-            auto max = S8(page_def.max);
-            auto new_val = S8(Clip(old_val + increment, min, max));
-            App::SetParameter(page_, U8(new_val));
-          } else { // UNSIGNED INTEGER
-            auto old_val = App::GetParameter(page_);
-            auto min = page_def.min;
-            auto max = page_def.max;
-            auto new_val = U8(Clip(old_val + increment, min, max));
-            App::SetParameter(page_, new_val);
-          }
+  bool redraw = false;
+  while (Queue::available()) {
+    Queue::Touch();
+
+    redraw = true;
+    Event e = Queue::PullEvent();
+
+    switch (e.control_type) {
+      case CONTROL_ENCODER:
+        if (App::OnIncrement(e.value)) {
+          // do nothing; app handled the event already
+        } else if (editing()) {
+          increment_parameter(e.value, current_page_);
         } else {
-          uint8_t current_page = page_;
-          while (true) {
-            page_ += e.value;
-            if (page_ == 0xff) {
-              page_ = 0;
-            } else if (page_ >= num_pages_) {
-              page_ = num_pages_ - 1_u8;
-            }
-            uint8_t page_status = App::CheckPageStatus(page_);
-            if (page_status == PAGE_GOOD) {
-              break;
-            } else if (page_status == PAGE_LAST) {
-              page_ = current_page;
-              break;
-            }
-          }
+          bool scrollForward = (e.value == 1);
+          scrollPage(scrollForward);
         }
-      }
-    } else if (e.control_type == CONTROL_ENCODER_CLICK) {
-      if (e.value == 1) {
-        if (!App::OnClick()) {
-          if (page_def.value_res_id == STR_RES_OFF) {
-            App::SetParameter(page_, App::GetParameter(page_) ? 0_u8 : 1_u8);
-            App::SaveSetting(page_);
-          } else {
-            editing_ = !editing_;
-            // Left the editing mode, save settings.
-            if (!editing_) {
-              App::SaveSetting(page_);
-            }
-          }
-        }
-      } else {
-        App::Launch(0);
-      }
-    } else if (e.control_type == CONTROL_POT) {
-      App::OnPot(e.control_id, e.value);
+        break;
+      case CONTROL_ENCODER_CLICK:
+        handle_encoder_click(e.value, current_page_);
+        break;
+      case CONTROL_POT:
+        App::OnPot(e.control_id, e.value);
+        break;
+      default:
+        break;
     }
   }
   
-  if (queue_.idle_time_ms() > 50) {
-    redraw = 1;
-    queue_.Touch();
+  if (Queue::idle_time_ms() > 50) {
+    redraw = true;
+    Queue::Touch();
     if (App::app_name() == STR_RES_MONITOR) {
       apps::Monitor::OnIdle();
     }
   }
   
   if (redraw && !App::OnRedraw()) {
-    uint8_t p = page_;
-    uint8_t index = 0;
-    while (p >= num_declared_pages_ && num_declared_pages_ && stride_) {
-      p -= stride_;
-      ++index;
-    }
-    const PageDefinition& page_def = pages_[p];
-    
-    PrintKeyValuePair(
-        page_def.key_res_id, index,
-        page_def.value_res_id, App::GetParameter(page_),
-        editing_);
+    const auto page_pos = page_position(current_page_);
+    const auto page_def = page_definition(page_pos);
+    PrintKeyValuePair(page_def.key_res_id, page_pos.repeat_index,
+          page_def.value_res_id, App::GetParameter(current_page_), editing_);
   }
   Display::Tick();
 }
@@ -243,10 +230,8 @@ static const char note_names_flat[] PROGMEM = " CDb DEb E FGb GAb ABb B";
 static const char octaves[] PROGMEM = "-012345678";
 
 /* static */
-void Ui::PrintKeyValuePair(
-    uint8_t key_res_id, uint8_t index,
-    uint8_t value_res_id, uint8_t value,
-    bool editing) {
+void Ui::PrintKeyValuePair(uint8_t key_res_id, uint8_t index,
+    uint8_t value_res_id, uint8_t value, bool editing) {
   memset(line_buffer, ' ', kLcdWidth);
   if (key_res_id == UNIT_CHANNEL) {
     line_buffer[0] = 'c';
@@ -268,8 +253,7 @@ void Ui::PrintKeyValuePair(
     case UNIT_INTEGER_ALL:
       UnsafeItoa(value, 3, &line_buffer[4]);
       if (value == 0 && value_res_id == UNIT_INTEGER_ALL) {
-          ResourcesManager::LoadStringResource(
-              STR_RES_ALL, &line_buffer[4], 3);
+          ResourcesManager::LoadStringResource(STR_RES_ALL, &line_buffer[4], 3);
       }
       break;
     case UNIT_SIGNED_INTEGER:
@@ -295,8 +279,7 @@ void Ui::PrintKeyValuePair(
       }
       break;
     default:
-      ResourcesManager::LoadStringResource(
-          value_res_id + value, &line_buffer[4], 3);
+      ResourcesManager::LoadStringResource(value_res_id + value, &line_buffer[4], 3);
       break;
   }
   AlignRight(&line_buffer[4], 3);

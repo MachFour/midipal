@@ -23,13 +23,14 @@
 #include "avrlib/watchdog_timer.h"
 
 #include "midi/midi.h"
+#include "midi/midi_constants.h"
 
 #include "midipal/display.h"
 #include "midipal/sysex_handler.h"
 #include "midipal/ui.h"
 
 namespace midipal {
-namespace apps{
+namespace apps {
 
 using namespace avrlib;
 
@@ -56,7 +57,7 @@ const AppInfo AppSelector::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   &OnRawByte, // void (*OnRawByte)(uint8_t);
-  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  nullptr, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   &OnIncrement, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -89,15 +90,15 @@ void AppSelector::OnRawByte(uint8_t byte) {
 uint8_t AppSelector::OnClick() {
   if (selected_item_ == App::num_apps()) {
     // Note nuke.
-    for (uint8_t i = 0; i < 16; ++i) {
-      for (uint8_t j = 0; j < 128; ++j) {
-        App::Send3(0x80 | i, j, 0);
+    for (uint8_t channel = 0; channel < 16; ++channel) {
+      for (uint8_t note = 0; note < 128; ++note) {
+        App::Send3(noteOffFor(channel), note, 0);
       }
     }
     return 1;
   } else if (selected_item_ == App::num_apps() + 1) {
     // Backup
-    sysex_handler.SendBlock(0, 0);
+    sysex_handler.SendBlock(nullptr, 0);
   } else if (selected_item_ == App::num_apps() + 2) {
     // Factory reset.
     for (uint8_t i = 1; i < App::num_apps(); ++i) {

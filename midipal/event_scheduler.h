@@ -26,35 +26,31 @@
 namespace midipal {
 
 #ifdef POLY_SEQUENCER_FIRMWARE
-static const uint8_t kEventSchedulerSize = 4;
+static constexpr uint8_t kEventSchedulerSize = 4;
 #else
-static const uint8_t kEventSchedulerSize = 90;
+static constexpr uint8_t kEventSchedulerSize = 90;
 #endif  // POLY_SEQUENCER_FIRMWARE
 
 static const uint8_t kFreeSlot = 0xff;
 static const uint8_t kZombieSlot = 0xfe;
 
-struct SchedulerEntry {
-  uint8_t note;  // 0xff for free slot
-  uint8_t velocity;  // 0 for note off
-  uint8_t when;
-  uint8_t next;
-  uint8_t tag;
-};
-
 class EventScheduler {
  public:
-  EventScheduler() { }
-  
+
+  struct Entry {
+    uint8_t note;  // 0xff for free slot
+    uint8_t velocity;  // 0 for note off
+    uint8_t when;
+    uint8_t next;
+    uint8_t tag;
+  };
+
   static void Init();
   static void Tick();
-  static void Schedule(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag);
-  static void Schedule(uint8_t note, uint8_t velocity, uint8_t when) {
-    Schedule(note, velocity, when, 0);
-  }
+  static void Schedule(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag = 0);
   static uint8_t Remove(uint8_t note, uint8_t velocity);
   
-  static inline const SchedulerEntry& entry(uint8_t address) {
+  static inline const Entry& entry(uint8_t address) {
     return entries_[address];
   }
   static inline uint8_t root() { return root_ptr_; }
@@ -64,14 +60,12 @@ class EventScheduler {
   }
 
  private:
-  static SchedulerEntry entries_[kEventSchedulerSize];
+  static Entry entries_[kEventSchedulerSize];
   static uint8_t root_ptr_;
   static uint8_t size_;
   
   DISALLOW_COPY_AND_ASSIGN(EventScheduler);
 };
-
-extern EventScheduler event_scheduler;
 
 }  // namespace midipal:
 

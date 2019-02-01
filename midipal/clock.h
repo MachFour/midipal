@@ -24,8 +24,8 @@
 
 namespace midipal {
 
-static const uint8_t kNumStepsInGroovePattern = 16;
-static const uint8_t kNumTicksPerStep = 6;
+static constexpr uint8_t kNumStepsInGroovePattern = 16;
+static constexpr uint8_t kNumTicksPerStep = 6;
 
 class Clock {
  public:
@@ -73,25 +73,11 @@ class Clock {
     return clock_;
   }
   
-  static void Update(
-      uint16_t bpm,
-      uint8_t groove_template,
-      uint8_t groove_amount) {
-    Update(bpm, 0, groove_template, groove_amount);
-  }
-  
-  static void UpdateFractional(
-      uint16_t bpm,
-      uint8_t multiplier,
-      uint8_t divider,
-      uint8_t groove_template,
-      uint8_t groove_amount);
+  static void UpdateFractional( uint16_t bpm, uint8_t multiplier, uint8_t divider,
+        uint8_t groove_template, uint8_t groove_amount);
 
-  static void Update(
-      uint16_t bpm,
-      uint8_t bpm_10th,
-      uint8_t groove_template,
-      uint8_t groove_amount);
+  static void Update(uint16_t bpm, uint8_t groove_template, uint8_t groove_amount,
+        uint8_t bpm_10th = 0);
 
  private:
   static bool running_;
@@ -101,8 +87,6 @@ class Clock {
   static uint8_t tick_count_;
   static uint8_t step_count_;
 };
-
-extern Clock clock;
 
 }  // namespace midipal
 

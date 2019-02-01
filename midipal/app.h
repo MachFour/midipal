@@ -19,6 +19,7 @@
 #include "avrlib/base.h"
 
 #include "midipal/resources.h"
+#include "ui.h"
 
 namespace midipal {
 
@@ -75,7 +76,7 @@ struct AppInfo {
   void (*OnStop)();
   bool (*CheckChannel)(uint8_t);
   void (*OnRawByte)(uint8_t);
-  void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  void (*OnRawMidiData)(uint8_t, uint8_t *, uint8_t);
   uint8_t (*OnIncrement)(int8_t);
   uint8_t (*OnClick)();
   uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -85,7 +86,7 @@ struct AppInfo {
   uint8_t (*GetParameter)(uint8_t);
   uint8_t (*CheckPageStatus)(uint8_t);
 
-  // TODO uint8_t settings_size;
+  // TODO uint8_t num_parameters;
   uint16_t settings_size;
   uint16_t settings_offset;
   uint8_t* settings_data;
@@ -197,13 +198,9 @@ class App {
       app_info_.OnRawByte(byte);
     }
   }
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel) {
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
     if (app_info_.OnRawMidiData) {
-      app_info_.OnRawMidiData(status, data, data_size, accepted_channel);
+      app_info_.OnRawMidiData(status, data, data_size);
     }
   }
 
@@ -260,18 +257,18 @@ class App {
     }
   }
 
-  static uint8_t CheckPageStatus(uint8_t index) {
+  static PageScrollingStatus CheckPageStatus(uint8_t index) {
     if (app_info_.CheckPageStatus) {
-      return app_info_.CheckPageStatus(index);
+      auto status = app_info_.CheckPageStatus(index);
+      return static_cast<PageScrollingStatus>(status);
     } else {
-      return 1;
+      return PAGE_GOOD;
     }
   }
 
   // Access to settings data structure
   static inline uint8_t num_parameters() {
     // TODO record number parameters distinctly from size
-    // OR each parameter stores its own size
     return static_cast<uint8_t>(settings_size());
   }
   static inline uint16_t settings_size() { return app_info_.settings_size; }

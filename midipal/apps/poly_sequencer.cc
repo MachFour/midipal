@@ -22,6 +22,8 @@
 #include "avrlib/op.h"
 #include "avrlib/string.h"
 
+#include "midi/midi_constants.h"
+
 #include "midipal/clock.h"
 #include "midipal/display.h"
 #include "midipal/ui.h"
@@ -75,7 +77,7 @@ const AppInfo PolySequencer::app_info_ PROGMEM = {
   &OnStop, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
 
   &OnIncrement, // uint8_t (*OnIncrement)(int8_t);
   &OnClick, // uint8_t (*OnClick)();
@@ -109,13 +111,9 @@ void PolySequencer::OnInit() {
 }
 
 /* static */
-void PolySequencer::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void PolySequencer::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   // Forward everything except note on for the selected channel.
-  if (status != byteOr(0x80, channel()) && status != byteOr(0x90, channel())) {
+  if (status != noteOffFor(channel()) && status != noteOnFor(channel())) {
     App::Send(status, data, data_size);
   }
 }
@@ -231,7 +229,7 @@ void PolySequencer::OnContinue() {
 void PolySequencer::OnClock(uint8_t clock_source) {
   if (clk_mode() == clock_source && running()) {
     if (clock_source == CLOCK_MODE_INTERNAL) {
-      App::SendNow(0xf8);
+      App::SendNow(MIDI_SYS_CLK_TICK);
     }
     Tick();
   }
@@ -282,7 +280,7 @@ void PolySequencer::Record(uint8_t note) {
   }
   if (recording()) {
     num_steps() = edit_step_;
-    App::SaveSetting(num_steps_);
+    App::SaveSetting(num_steps());
   }
 }
 
@@ -305,7 +303,7 @@ void PolySequencer::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
   
   if (!was_running && !just_started) {
-    App::Send3(byteOr(0x90, channel), note, velocity);
+    App::Send3(noteOnFor(PolySequencer::channel()), note, velocity);
   }
   if (running() && !recording() && !overdubbing()) {
     last_note_ = note;
@@ -320,7 +318,7 @@ void PolySequencer::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
   
   if (!running()) {
-    App::Send3(byteOr(0x80, channel), note, velocity);
+    App::Send3(noteOffFor(channel), note, velocity);
   }
 }
 
@@ -333,11 +331,11 @@ void PolySequencer::Stop() {
   // Stop pending notes.
   for (uint8_t i = 0; i < kNumTracks; ++i) {
     if (pending_notes_[i] != 0xff) {
-      App::Send3(byteOr(0x80, channel()), pending_notes_transposed_[i], 0);
+      App::Send3(noteOffFor(channel()), pending_notes_transposed_[i], 0);
     }
   }
   if (clk_mode() == CLOCK_MODE_INTERNAL) {
-    App::SendNow(0xfc);
+    App::SendNow(MIDI_SYS_CLK_STOP);
   }
 }
 
@@ -348,7 +346,7 @@ void PolySequencer::Start() {
   }
   if (clk_mode() == CLOCK_MODE_INTERNAL) {
     Clock::Start();
-    App::SendNow(0xfa);
+    App::SendNow(MIDI_SYS_CLK_START);
   }
   tick_ = midi_clock_prescaler_ - 1_u8;
   root_note_ = 60;
@@ -376,7 +374,7 @@ void PolySequencer::Tick() {
           }
         }
         if (!is_tied) {
-          App::Send3(byteOr(0x80, channel()), pending_notes_transposed_[i], 0);
+          App::Send3(noteOffFor(channel()), pending_notes_transposed_[i], 0);
           pending_notes_[i] = 0xff;
         }
       }
@@ -390,7 +388,7 @@ void PolySequencer::Tick() {
         pending_notes_[i] = note;
         note += last_note_ - root_note_;
         pending_notes_transposed_[i] = note;
-        App::Send3(byteOr(0x90, channel()), note, 100);
+        App::Send3(noteOnFor(channel()), note, 100);
       }
     }
     ++step_;

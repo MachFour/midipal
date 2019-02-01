@@ -67,7 +67,7 @@ const AppInfo Lfo::app_info_ PROGMEM = {
   &OnStop, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
 
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
@@ -107,11 +107,7 @@ void Lfo::OnInit() {
 }
 
 /* static */
-void Lfo::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Lfo::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   if (status != byteOr(0x80, channel()) && status != byteOr(0x90, channel())) {
     App::Send(status, data, data_size);
   } else {

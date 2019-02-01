@@ -26,7 +26,9 @@ namespace midipal {
 namespace apps{
 
 class Arpeggiator {
- public:
+  static constexpr auto maxPatternLength = 16u;
+
+public:
   enum Parameter : uint8_t {
     clk_mode_,
     bpm_,
@@ -46,11 +48,7 @@ class Arpeggiator {
   static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
   static void OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);
   static void OnControlChange(uint8_t, uint8_t, uint8_t);
@@ -71,7 +69,6 @@ class Arpeggiator {
   static void StepArpeggio();
   static void SendNote(uint8_t note, uint8_t velocity);
   
-  static uint8_t running_;
 
 private:
 
@@ -132,14 +129,15 @@ private:
   
   static uint8_t tick_;
   static uint8_t idle_ticks_;
-  static uint16_t bitmask_;
+  static uint8_t pattern_step;
   static int8_t current_direction_;
   static int8_t current_octave_;
   static int8_t current_step_;
   
   static uint8_t ignore_note_off_messages_;
-  static uint8_t recording_;
-  
+  static bool recording_;
+  static bool running_;
+
   DISALLOW_COPY_AND_ASSIGN(Arpeggiator);
 };
 

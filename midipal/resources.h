@@ -316,6 +316,7 @@ extern const uint8_t wav_res_lfo_waveforms[] PROGMEM;
 #define STR_RES___NOT 232  // not
 #define STR_RES__CHD 233  // chd
 #define STR_RES_PRG 234  // prg
+#define STR_RES_SH_SEQ 235 // SH-seq
 #define LUT_RES_ARPEGGIATOR_PATTERNS 0
 #define LUT_RES_ARPEGGIATOR_PATTERNS_SIZE 22
 #define LUT_RES_DRUM_PATTERNS 1
@@ -392,11 +393,9 @@ extern const uint8_t wav_res_lfo_waveforms[] PROGMEM;
 #define CHR_RES_SEQUENCER_ICONS_SIZE 32
 #define WAV_RES_LFO_WAVEFORMS 0
 #define WAV_RES_LFO_WAVEFORMS_SIZE 2193
-typedef avrlib::ResourcesManager<
-    ResourceId,
-    avrlib::ResourcesTables<
-        string_table,
-        lookup_table_table> > ResourcesManager; 
+
+using ResourcesManager = avrlib::ResourcesManager<ResourceId,
+  avrlib::ResourcesTables<string_table, lookup_table_table>>;
 
 }  // namespace midipal
 

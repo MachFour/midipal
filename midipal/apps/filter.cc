@@ -55,7 +55,7 @@ const AppInfo Filter::app_info_ PROGMEM = {
   nullptr, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
   nullptr, // uint8_t (*OnPot)(uint8_t, uint8_t);
@@ -78,11 +78,7 @@ void Filter::OnInit() {
 }
 
 /* static */
-void Filter::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Filter::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   auto isSystemCommonMessage = byteAnd(status, 0xf0) == 0xf0;
   // note: if (isSystemCommonMessage), the channel bits
   // don't really represent a channel

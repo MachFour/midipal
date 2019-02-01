@@ -105,16 +105,8 @@ struct MidiHandler : public midi::MidiDevice {
     App::OnRawByte(byte);
   }
 
-  static void RawMidiData(
-      uint8_t status,
-      uint8_t* data,
-      uint8_t data_size,
-      uint8_t accepted_channel) {
-    App::OnRawMidiData(
-        status,
-        data,
-        data_size,
-        accepted_channel);
+  static void RawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
+    App::OnRawMidiData(status, data, data_size);
   }
 };
 

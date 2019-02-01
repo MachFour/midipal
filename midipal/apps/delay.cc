@@ -64,7 +64,7 @@ const AppInfo Delay::app_info_ PROGMEM = {
   &OnStop, // void (*OnStop)();
   nullptr, // bool *(CheckChannel)(uint8_t);
   nullptr, // void (*OnRawByte)(uint8_t);
-  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t, uint8_t);
+  &OnRawMidiData, // void (*OnRawMidiData)(uint8_t, uint8_t*, uint8_t);
 
   nullptr, // uint8_t (*OnIncrement)(int8_t);
   nullptr, // uint8_t (*OnClick)();
@@ -98,11 +98,7 @@ void Delay::OnInit() {
 }
 
 /* static */
-void Delay::OnRawMidiData(
-   uint8_t status,
-   uint8_t* data,
-   uint8_t data_size,
-   uint8_t accepted_channel) {
+void Delay::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
   if (status != noteOffFor(channel()) && status != noteOnFor(channel())) {
     App::Send(status, data, data_size);
   } else if (clk_mode() != CLOCK_MODE_NOTE ||
@@ -162,9 +158,8 @@ void Delay::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
 
 /* static */
 void Delay::SendEchoes() {
-  uint8_t current = event_scheduler.root();
-  while (current) {
-    const SchedulerEntry& entry = event_scheduler.entry(current);
+  for (uint8_t current = EventScheduler::root(); current; /* loop update at end */) {
+    const auto& entry = EventScheduler::entry(current);
     if (entry.when) {
       break;
     }
@@ -178,7 +173,7 @@ void Delay::SendEchoes() {
     }
     current = entry.next;
   }
-  event_scheduler.Tick();
+  EventScheduler::Tick();
 }
 
 /* static */
@@ -203,7 +198,7 @@ void Delay::ScheduleEchoes(uint8_t note, uint8_t velocity, uint8_t num_taps) {
   }
   note = Transpose(note, transposition());
   App::SendLater(note, velocity, Clip(delay, 1_u8, 255_u8), num_taps - 1_u8);
-  if (event_scheduler.overflow()) {
+  if (EventScheduler::overflow()) {
     Display::set_status('!');
   }
 }
@@ -213,16 +208,25 @@ void Delay::ScheduleEchoes(uint8_t note, uint8_t velocity, uint8_t num_taps) {
 void Delay::SetParameter(uint8_t key, uint8_t value) {
   auto param = static_cast<Parameter>(key);
   ParameterValue(param) = value;
-  if (key <= Parameter::groove_amount_) {
-    // it's a clock-related parameter
-    Clock::Update(bpm(), groove_template(), groove_amount());
+  switch (param) {
+    case bpm_:
+    case groove_template_:
+    case groove_amount_:
+      // it's a clock-related parameter
+      Clock::Update(bpm(), groove_template(), groove_amount());
+      break;
+    case clk_mode_:
+      if (value == 0) {
+        App::SendNow(MIDI_SYS_CLK_STOP);
+      }
+      break;
+    case velocity_factor_:
+      velocity_factor_reverse_log_ = ResourcesManager::Lookup<uint8_t, uint8_t>(
+            velocity_factor_table, velocity_factor());
+      break;
+    default:
+      break;
   }
-  if (key == Parameter::clk_mode_ && value == 0) {
-    // stop clock
-    App::SendNow(MIDI_SYS_CLK_STOP);
-  }
-  velocity_factor_reverse_log_ = ResourcesManager::Lookup<uint8_t, uint8_t>(
-      velocity_factor_table, velocity_factor());
 }
 
 } // namespace apps

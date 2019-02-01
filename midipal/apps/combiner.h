@@ -38,11 +38,7 @@ class Combiner {
   static uint8_t settings[Parameter::COUNT];
 
   static void OnInit();
-  static void OnRawMidiData(
-     uint8_t status,
-     uint8_t* data,
-     uint8_t data_size,
-     uint8_t accepted_channel);
+  static void OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size);
  
   static const AppInfo app_info_ PROGMEM;
  
