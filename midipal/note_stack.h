@@ -44,7 +44,6 @@
 #include "avrlib/base.h"
 #include "avrlib/op.h"
 
-static const uint8_t kNoteStackSize = 16;
 
 namespace midipal {
 
@@ -55,8 +54,10 @@ struct NoteEntry {
 };
 
 class NoteStack {
+  static constexpr uint8_t kFreeSlot = 0xff;
+  static constexpr uint8_t kNoteStackSize = 16;
+
  public:
-  NoteStack() { }
   static void Init() { Clear(); }
 
   static void NoteOn(uint8_t note, uint8_t velocity);

@@ -96,8 +96,9 @@ void ShSequencer::OnInit() {
   Ui::AddClockPages();
   Ui::AddPage(STR_RES_DIV, STR_RES_2_1, 0, 16);
   Ui::AddPage(STR_RES_CHN, UNIT_INDEX, 0, 15);
-  Clock::Update(bpm(), groove_template(), groove_amount());
+  // trigger side effects
   SetParameter(bpm_, bpm());
+  SetParameter(clock_division_, clock_division());
   Clock::Start();
   running() = 0;
   recording() = 0;
@@ -168,13 +169,8 @@ uint8_t ShSequencer::OnRedraw() {
 /* static */
 uint8_t ShSequencer::OnIncrement(int8_t increment) {
   if (recording()) {
-    rec_mode_menu_option_ += increment;
-    if (rec_mode_menu_option_ == 0xff) {
-      rec_mode_menu_option_ = 0;
-    }
-    if (rec_mode_menu_option_ >= 2) {
-      rec_mode_menu_option_ = 2;
-    }
+    // addition causes promotion to int16_t
+    rec_mode_menu_option_ = Clip(rec_mode_menu_option_ + increment, 0_u8, 2_u8);
     Ui::RefreshScreen();
     return 1;
   } else {
@@ -210,14 +206,14 @@ uint8_t ShSequencer::OnClick() {
 
 /* static */
 void ShSequencer::OnStart() {
-  if (clk_mode() != CLOCK_MODE_INTERNAL) {
+  if (!isClockModeInternal()) {
     Start();
   }
 }
 
 /* static */
 void ShSequencer::OnStop() {
-  if (clk_mode() != CLOCK_MODE_INTERNAL) {
+  if (!isClockModeInternal()) {
     Stop();
   }
 }
@@ -232,7 +228,7 @@ void ShSequencer::OnContinue() {
 /* static */
 void ShSequencer::OnClock(uint8_t clock_source) {
   if (clk_mode() == clock_source && running()) {
-    if (clock_source == CLOCK_MODE_INTERNAL) {
+    if (isClockModeInternal()) {
       App::SendNow(MIDI_SYS_CLK_TICK);
     }
     Tick();
@@ -278,12 +274,14 @@ void ShSequencer::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
     if (recorded_steps() == kNumSteps) {
       recording() = 0;
     }
-  } else if (running() && clk_mode() == CLOCK_MODE_INTERNAL && note == last_note_) {
-    Stop();
-  } else if (clk_mode() == CLOCK_MODE_INTERNAL) {
-    Start();
-    root_note_ = note;
-    just_started = true;
+  } else if (isClockModeInternal()) {
+    if (running() && note == last_note_) {
+      Stop();
+    } else {
+      Start();
+      root_note_ = note;
+      just_started = true;
+    }
   }
   
   if (!was_running && !just_started) {
@@ -314,7 +312,7 @@ void ShSequencer::Stop() {
       App::Send3(noteOffFor(channel()), pending_note_, 0);
     }
     pending_note_ = 0xff;
-    if (clk_mode() == CLOCK_MODE_INTERNAL) {
+    if (isClockModeInternal()) {
       App::SendNow(MIDI_SYS_CLK_STOP);
     }
   }
@@ -323,7 +321,7 @@ void ShSequencer::Stop() {
 /* static */
 void ShSequencer::Start() {
   if (!running()) {
-    if (clk_mode() == CLOCK_MODE_INTERNAL) {
+    if (isClockModeInternal()) {
       Clock::Start();
       App::SendNow(MIDI_SYS_CLK_START);
     }
@@ -369,8 +367,7 @@ void ShSequencer::Tick() {
       }
       pending_note_ = note;
     }
-    ++playback_step_;
-    if (playback_step_ >= recorded_steps()) {
+    if (++playback_step_ >= recorded_steps()) {
       playback_step_ = 0;
     }
   }

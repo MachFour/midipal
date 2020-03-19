@@ -27,14 +27,14 @@ namespace midipal {
 uint8_t EventScheduler::size_;
 
 /* static */
-EventScheduler::Entry EventScheduler::entries_[kEventSchedulerSize];
+EventScheduler::Entry EventScheduler::entries_[numEntries];
 
 /* static */
 uint8_t EventScheduler::root_ptr_;
 
 /* static */
 void EventScheduler::Init() {
-  memset(entries_, kFreeSlot, kEventSchedulerSize * sizeof(Entry));
+  memset(entries_, kFreeSlot, numEntries * sizeof(Entry));
   root_ptr_ = 0;
   size_ = 0;
 }
@@ -73,7 +73,7 @@ uint8_t EventScheduler::Remove(uint8_t note, uint8_t velocity) {
 void EventScheduler::Schedule(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
   // Locate a free entry in the list.
   uint8_t free_slot = 0;
-  for (uint8_t i = 1; i < kEventSchedulerSize; ++i) {
+  for (uint8_t i = 1; i < numEntries; ++i) {
     if (entries_[i].note == kFreeSlot) {
       free_slot = i;
       break;

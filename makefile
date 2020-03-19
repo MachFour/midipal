@@ -13,7 +13,7 @@
 
 include midipal/makefile
 
-bake_all: build/midipal/midipal.hex
+bake_all: build/midipal/midipal.hex build/muboot/muboot.hex
 		make -f bootloader/makefile
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 10 -u -e \
 			-U efuse:w:0x$(EFUSE):m \
@@ -25,7 +25,7 @@ bake_all: build/midipal/midipal.hex
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 1 \
 			-U lock:w:0x$(LOCK):m
 
-yes_bake_all: build/midipal/midipal.hex
+yes_bake_all: build/midipal/midipal.hex build/muboot/muboot.hex
 		make -f bootloader/makefile
 		yes | $(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) -B 10 -u -e \
 			-U efuse:w:0x$(EFUSE):m \

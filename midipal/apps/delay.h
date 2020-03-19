@@ -94,7 +94,11 @@ private:
     return ParameterValue(transposition_);
   }
   static inline uint8_t& doppler() {
-    return ParameterValue(clk_mode_);
+    return ParameterValue(doppler_);
+  }
+
+  static bool isInternalClock() {
+    return clk_mode() == CLOCK_MODE_INTERNAL;
   }
 
   static uint8_t running_;

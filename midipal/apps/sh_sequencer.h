@@ -82,6 +82,9 @@ public:
   static void Tick();
   static void SaveAndAdvanceStep();
   static void RecordSlideOrAccent(uint8_t *data_ptr);
+  static bool isClockModeInternal() {
+    return clk_mode() == CLOCK_MODE_INTERNAL;
+  }
 
   static uint8_t& ParameterValue(Parameter key) {
     return settings[key];

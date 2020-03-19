@@ -25,17 +25,17 @@
 
 namespace midipal {
 
-#ifdef POLY_SEQUENCER_FIRMWARE
-static constexpr uint8_t kEventSchedulerSize = 4;
-#else
-static constexpr uint8_t kEventSchedulerSize = 90;
-#endif  // POLY_SEQUENCER_FIRMWARE
-
-static const uint8_t kFreeSlot = 0xff;
-static const uint8_t kZombieSlot = 0xfe;
-
 class EventScheduler {
  public:
+#ifdef POLY_SEQUENCER_FIRMWARE
+  static constexpr uint8_t numEntries = 4;
+#else
+  static constexpr uint8_t numEntries = 90;
+#endif  // POLY_SEQUENCER_FIRMWARE
+
+  static constexpr uint8_t kFreeSlot = 0xff;
+  static constexpr uint8_t kZombieSlot = 0xfe;
+
 
   struct Entry {
     uint8_t note;  // 0xff for free slot
@@ -50,17 +50,17 @@ class EventScheduler {
   static void Schedule(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag = 0);
   static uint8_t Remove(uint8_t note, uint8_t velocity);
   
-  static inline const Entry& entry(uint8_t address) {
+  static const Entry& entryAt(uint8_t address) {
     return entries_[address];
   }
-  static inline uint8_t root() { return root_ptr_; }
-  static inline uint8_t size() { return size_; }
-  static inline uint8_t overflow() {
-    return size() >= kEventSchedulerSize - 8;
+  static uint8_t root() { return root_ptr_; }
+  static uint8_t size() { return size_; }
+  static bool overflow() {
+    return size() >= numEntries - 8;
   }
 
  private:
-  static Entry entries_[kEventSchedulerSize];
+  static Entry entries_[EventScheduler::numEntries];
   static uint8_t root_ptr_;
   static uint8_t size_;
   

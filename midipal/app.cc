@@ -200,11 +200,11 @@ void App::SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
 void App::SendScheduledNotes(uint8_t channel) {
   uint8_t current = EventScheduler::root();
   while (current) {
-    const EventScheduler::Entry& entry = EventScheduler::entry(current);
+    const EventScheduler::Entry& entry = EventScheduler::entryAt(current);
     if (entry.when) {
       break;
     }
-    if (entry.note != kZombieSlot) {
+    if (entry.note != EventScheduler::kZombieSlot) {
       if (entry.velocity == 0) {
         Send3(noteOffFor(channel), entry.note, 0);
       } else {

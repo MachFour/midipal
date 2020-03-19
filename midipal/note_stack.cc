@@ -23,8 +23,6 @@
 
 namespace midipal {
 
-static const uint8_t kFreeSlot = 0xff;
-
 /* static */
 uint8_t NoteStack::size_;
 
@@ -117,8 +115,5 @@ void NoteStack::Clear() {
     pool_[i].note = kFreeSlot;
   }
 }
-
-/* extern */
-NoteStack note_stack;
 
 }  // namespace midipal

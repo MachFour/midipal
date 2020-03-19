@@ -93,6 +93,7 @@ void Delay::OnInit() {
   
   Clock::Update(bpm(), groove_template(), groove_amount());
   SetParameter(delay_, delay());  // Force an update of the prescaler.
+  SetParameter(velocity_factor_, velocity_factor()); // lookup velocity factor table
   Clock::Start();
   running_ = 0;
 }
@@ -109,39 +110,49 @@ void Delay::OnRawMidiData(uint8_t status, uint8_t* data, uint8_t data_size) {
 
 /* static */
 void Delay::OnContinue() {
-  if (clk_mode() != CLOCK_MODE_INTERNAL) {
+  if (!isInternalClock()) {
     running_ = 1;
   }
 }
 
 /* static */
 void Delay::OnStart() {
-  if (clk_mode() != CLOCK_MODE_INTERNAL) {
+  if (!isInternalClock()) {
     running_ = 1;
   }
 }
 
 /* static */
 void Delay::OnStop() {
-  if (clk_mode() != CLOCK_MODE_INTERNAL) {
+  if (!isInternalClock()) {
     running_ = 0;
   }
 }
 
 /* static */
 void Delay::OnClock(uint8_t clock_source) {
-  if (clk_mode() == clock_source && (running_ || clock_source == CLOCK_MODE_INTERNAL)) {
-    if (clock_source == CLOCK_MODE_INTERNAL) {
+  /*
+  if (clk_mode() == clock_source && (running_ || isInternalClock())) {
+    if (isInternalClock()) {
       App::SendNow(MIDI_SYS_CLK_TICK);
     }
     SendEchoes();
+  }
+  */
+  if (clk_mode() == clock_source) {
+    if (isInternalClock()) {
+      App::SendNow(MIDI_SYS_CLK_TICK);
+      SendEchoes();
+    } else if (running_) {
+      SendEchoes();
+    }
   }
 }
 
 /* static */
 void Delay::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
-  if ((clk_mode() == CLOCK_MODE_NOTE && App::NoteClock(true, channel, note)) ||
-      channel != Delay::channel()) {
+  if ((clk_mode() == CLOCK_MODE_NOTE && App::NoteClock(true, channel, note))
+      || channel != Delay::channel()) {
     return;
   }
   ScheduleEchoes(note, velocity, num_taps());
@@ -149,8 +160,8 @@ void Delay::OnNoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
 
 /* static */
 void Delay::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
-  if ((clk_mode() == CLOCK_MODE_NOTE && App::NoteClock(false, channel, note)) ||
-      channel != Delay::channel()) {
+  if ((clk_mode() == CLOCK_MODE_NOTE && App::NoteClock(false, channel, note))
+      || channel != Delay::channel()) {
     return;
   }
   ScheduleEchoes(note, 0, num_taps());
@@ -159,11 +170,11 @@ void Delay::OnNoteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
 /* static */
 void Delay::SendEchoes() {
   for (uint8_t current = EventScheduler::root(); current; /* loop update at end */) {
-    const auto& entry = EventScheduler::entry(current);
+    const auto& entry = EventScheduler::entryAt(current);
     if (entry.when) {
       break;
     }
-    if (entry.note != kZombieSlot) {
+    if (entry.note != EventScheduler::kZombieSlot) {
       if (entry.velocity == 0) {
         App::Send3(noteOffFor(channel()), entry.note, 0);
       } else {
@@ -181,23 +192,28 @@ void Delay::ScheduleEchoes(uint8_t note, uint8_t velocity, uint8_t num_taps) {
   if (num_taps == 0) {
     return;
   }
-  int8_t doppler_iterations = Delay::num_taps() - num_taps;
-  if (doppler_iterations < 0) {
-    doppler_iterations = 0;
-  }
   int16_t delay = ResourcesManager::Lookup<uint8_t, uint8_t>(
-      midi_clock_tick_per_step, Delay::delay());
-  for (uint8_t i = 0; i < doppler_iterations && doppler(); ++i) {
-    delay += S16S8MulShift8(delay, doppler() << 1u);
-  }
+        midi_clock_tick_per_step, Delay::delay());
 
-  uint8_t min_velocity_value = velocity > 0 ? 1_u8 : 0_u8;
-  velocity = U8U8MulShift8(velocity, velocity_factor_reverse_log_);
-  if (velocity < min_velocity_value) {
-    velocity = min_velocity_value;
+  if (doppler()) {
+    int8_t doppler_iterations = Delay::num_taps() - num_taps;
+    if (doppler_iterations > 0) {
+      for (uint8_t i = 0; i < doppler_iterations; ++i) {
+        delay += S16S8MulShift8(delay, doppler() << 1u);
+      }
+    }
   }
-  note = Transpose(note, transposition());
-  App::SendLater(note, velocity, Clip(delay, 1_u8, 255_u8), num_taps - 1_u8);
+  uint8_t delay_byte = Clip(delay, 1_u8, 255_u8);
+
+  uint8_t decayed_velocity = U8U8MulShift8(velocity, velocity_factor_reverse_log_);
+  // if the velocity is nonzero, make sure we don't truncate it to zero
+  // accidentally and cause a note off
+  if (decayed_velocity == 0 && velocity > 0) {
+    decayed_velocity = 1;
+  }
+  uint8_t transposed_note = Transpose(note, transposition());
+
+  App::SendLater(transposed_note, decayed_velocity, delay_byte, num_taps - 1_u8);
   if (EventScheduler::overflow()) {
     Display::set_status('!');
   }

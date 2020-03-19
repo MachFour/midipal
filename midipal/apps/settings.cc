@@ -32,7 +32,7 @@ static const uint8_t settings_factory_data[Settings::Parameter::COUNT] PROGMEM =
 };
 
 /* static */
-uint8_t Settings::settings[Parameter::COUNT] = {0};
+uint8_t Settings::settings[Parameter::COUNT];
 
 /* static */
 const AppInfo Settings::app_info_ PROGMEM = {
