@@ -96,7 +96,7 @@ void DrumPatternGenerator::OnInit() {
   Ui::AddClockPages();
   Ui::AddPage(STR_RES_CHN, UNIT_INDEX, 0, 15);
   for (uint8_t i = 0; i < kNumDrumParts; ++i) {
-    Ui::AddPage(STR_RES_PT1 + i, UNIT_NOTE, 20, 108);
+    Ui::AddPage(STR_RES_PT1 + i, UNIT_NOTE, 0, 108);
   }
   Clock::Update(bpm(), groove_template(), groove_amount());
   Clock::Start();
